@@ -49,6 +49,18 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Nama route dashboard sesuai role user.
+     */
+    public function dashboardRoute(): string
+    {
+        return match (true) {
+            $this->hasRole('admin') => 'admin.dashboard',
+            $this->hasRole('kasir') => 'kasir.dashboard',
+            default => 'login',
+        };
+    }
+
     public function pembelian(): HasMany
     {
         return $this->hasMany(Pembelian::class);

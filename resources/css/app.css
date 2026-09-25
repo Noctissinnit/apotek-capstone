@@ -22,4 +22,27 @@
     .nav-heading {
         @apply px-3 pt-5 pb-2 text-xs font-semibold tracking-wider text-slate-500 uppercase;
     }
+
+    .form-label {
+        @apply mb-2 block text-sm font-semibold text-slate-700;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        @apply block w-full rounded-xl border border-slate-300 bg-white text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:outline-none;
+    }
+
+    .form-input,
+    .form-select {
+        @apply h-11 px-3.5;
+    }
+
+    .form-textarea {
+        @apply min-h-28 resize-y px-3.5 py-3;
+    }
+
+    .form-select {
+        @apply cursor-pointer appearance-none pr-10;
+    }
 }

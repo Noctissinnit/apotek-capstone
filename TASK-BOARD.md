@@ -1,7 +1,7 @@
 # Task Board — Sistem Inventaris & Kasir Apotek
 
 **Acuan:** Implementation Plan Capstone Project - Kelompok 1
-**Terakhir diperbarui:** 22 September 2026
+**Terakhir diperbarui:** 25 September 2026 (setelah merge `CRUD_Obat`, `feature/crud-user`, dan `feature/kasir` ke `development`)
 
 ---
 
@@ -9,24 +9,27 @@
 
 | Bagian | Task | Progress |
 |---|---:|---|
-| **Keseluruhan** | 132 | `█░░░░░░░░░░░░░░░░░░░` **5%** |
+| **Keseluruhan** | 136 | `███░░░░░░░░░░░░░░░░░` **16%** |
 | W1 — Requirement Validation | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W2 — Requirement Baseline | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W3 — Analysis & Design | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| W4 — Technical Foundation | 11 | `█████████░░░░░░░░░░░` 45% |
-| W5 — Auth, Pharmacy & Inventory | 12 | `███░░░░░░░░░░░░░░░░░` 17% |
-| GAP — Temuan Gap Analysis | 5 | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| W6 — Cashier & Transaction | 15 | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| W4 — Technical Foundation | 11 | `███████████████░░░░░` 77% |
+| W5 — Auth, Pharmacy & Inventory | 12 | `██████████████░░░░░░` 69% |
+| GAP — Temuan Gap Analysis | 6 | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| EX — Fitur Tambahan | 3 | `████████████████████` 100% |
+| W6 — Cashier & Transaction | 15 | `█░░░░░░░░░░░░░░░░░░░` 7% |
 | W7 — Transaction ↔ Stock | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| W8 — History & Reporting | 9 | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| W8 — History & Reporting | 9 | `█░░░░░░░░░░░░░░░░░░░` 6% |
 | W9 — Hardening & Feature Freeze | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W10 — System Testing | 12 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W11 — UAT & Deployment | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W12 — Final Release | 14 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 
-**Jumlah per status:** ✅ DONE 0 · 🔍 REVIEW 8 · 🔄 IN PROGRESS 2 · 📋 TODO 44 · 🗂️ BACKLOG 78
+**Jumlah per status:** ✅ DONE 18 · 🔍 REVIEW 1 · 🔄 IN PROGRESS 5 · 📋 TODO 38 · 🗂️ BACKLOG 74
 
-**Test scenario:** 4 / 35 PASS · 1 sebagian · 30 belum dijalankan
+**Test scenario:** 7 / 35 PASS · 3 sebagian · 25 belum dijalankan
+
+**Test otomatis:** 27 test, 148 assertion, seluruhnya lulus (`php artisan test`)
 
 ---
 
@@ -104,22 +107,22 @@
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W4-01 | Repository Setup | Alexander | | 📋 TODO | Folder belum jadi repo git |
-| W4-02 | Git Branching Strategy | Alexander | | 📋 TODO | |
-| W4-03 | Project Structure | Alexander | | 🔍 REVIEW | Laravel 12 + Spatie Permission + Tailwind v4 |
-| W4-04 | Database Initialization | Alexander | | 🔍 REVIEW | Critical. Migrasi jalan, tapi perlu disesuaikan setelah ERD final |
-| W4-05 | Database Connection | Alexander | | 🔍 REVIEW | MySQL `apotek_capstone` |
-| W4-06 | Base Frontend Layout | Pieter + Roman | | 🔍 REVIEW | Sidebar sesuai permission, navbar, footer |
-| W4-07 | UI Component Foundation | Roman + Samuel | | 🔄 IN PROGRESS | Baru kartu, tabel, alert. Belum ada komponen Blade yang bisa dipakai ulang |
-| W4-08 | Authentication Skeleton | Alexander | | 🔍 REVIEW | Critical. Sudah jadi login lengkap |
-| W4-09 | Dummy/Test Data | Samuel | | 🔍 REVIEW | Seeder user, obat, supplier, pembelian. Perlu data 2 apotek (GAP-04) |
-| W4-10 | Coding Convention | Alexander + All | | 📋 TODO | |
+| W4-01 | Repository Setup | Alexander | | ✅ DONE | Repo GitHub `Noctissinnit/apotek-capstone`, branch main/development/feature |
+| W4-02 | Git Branching Strategy | Alexander | | 🔄 IN PROGRESS | Alur branch jalan, tapi penamaan masih campur (`CRUD_Obat` vs `feature/kasir`) dan belum ada aturan tertulis |
+| W4-03 | Project Structure | Alexander | | ✅ DONE | Laravel 12 + Spatie Permission + Tailwind v4, dipakai seluruh anggota |
+| W4-04 | Database Initialization | Alexander | | ✅ DONE | Critical. 11 migrasi jalan. Perlu penyesuaian saat entitas Apotek masuk (GAP-01) |
+| W4-05 | Database Connection | Alexander | | ✅ DONE | MySQL `apotek_capstone` |
+| W4-06 | Base Frontend Layout | Pieter + Roman | | ✅ DONE | Layout, sidebar sesuai hak akses, navbar, flash message, responsif |
+| W4-07 | UI Component Foundation | Roman + Samuel | | ✅ DONE | Class komponen di `app.css`: `form-*`, `stat-card`, `panel-*`, `badge-*`, `btn-*`, `table-*`, `empty-state` |
+| W4-08 | Authentication Skeleton | Alexander | | ✅ DONE | Critical. Login penuh + 11 test |
+| W4-09 | Dummy/Test Data | Samuel | | ✅ DONE | Seeder role, user, kategori, obat, supplier, pembelian. Perlu data 2 apotek nanti (GAP-04) |
+| W4-10 | Coding Convention | Alexander + All | | 📋 TODO | Belum ada dokumen. Termasuk aturan wajib `npm run build` sebelum push (EX-03) |
 | W4-11 | Issue/Bug Board | Samuel | | 📋 TODO | |
 
-**Acceptance Gate W4**
-- [ ] Semua anggota dapat menjalankan project — *menunggu W4-01*
+**Acceptance Gate W4 — TERPENUHI**
+- [x] Semua anggota dapat menjalankan project
 - [x] Database dapat digunakan
-- [ ] Repository dan branching berjalan
+- [x] Repository dan branching berjalan — *aturan penamaan branch belum ditulis (W4-02)*
 - [x] Base application dapat dibuka
 - [x] Login skeleton tersedia
 
@@ -127,18 +130,18 @@
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W5-01 | User/Account Data | Alexander | | 🔄 IN PROGRESS | User + role admin/kasir sudah ada. Relasi ke apotek belum ada |
+| W5-01 | User/Account Data | Alexander | | ✅ DONE | CRUD user + kolom alamat/kontak + role admin & kasir. Relasi ke apotek menyusul di W5-03 |
 | W5-02 | Pharmacy Data | Alexander | | 📋 TODO | Bergantung pada GAP-01 |
 | W5-03 | Account → Pharmacy Relationship | Alexander | | 📋 TODO | Critical |
-| W5-04 | Login Implementation | Alexander + Pieter | | 🔍 REVIEW | Pengalihan ke dashboard sesuai role, pembatasan percobaan login |
-| W5-05 | Session Protection | Alexander | | 🔍 REVIEW | Middleware auth dan role, session diganti saat login dan dihapus saat logout |
+| W5-04 | Login Implementation | Alexander + Pieter | | ✅ DONE | Pengalihan sesuai role, batas 5 kali percobaan, logout. Teruji |
+| W5-05 | Session Protection | Alexander | | ✅ DONE | Middleware `auth`/`role`/`permission`, session diganti saat login dan dihapus saat logout |
 | W5-06 | Pharmacy Data Isolation Backend | Alexander | | 📋 TODO | Critical. Wajib di backend, bukan hanya frontend |
-| W5-07 | Inventory List UI | Pieter | | 📋 TODO | Route `obat.index` sudah disiapkan di sidebar |
-| W5-08 | Add/Edit Item UI | Roman + Samuel | | 📋 TODO | |
-| W5-09 | CRUD Item Backend | Alexander | | 📋 TODO | Critical. Model `Obat` sudah ada, controller belum |
-| W5-10 | Search Item | Pieter | | 📋 TODO | |
-| W5-11 | Inventory Validation | Alexander | | 📋 TODO | |
-| W5-12 | Inventory Test | All | | 📋 TODO | |
+| W5-07 | Inventory List UI | Pieter | | ✅ DONE | Tabel obat + urutkan semua kolom + 10 data per halaman. Teruji |
+| W5-08 | Add/Edit Item UI | Roman + Samuel | | ✅ DONE | Form tambah, ubah, detail, hapus |
+| W5-09 | CRUD Item Backend | Alexander | | ✅ DONE | Critical. `ObatController` + `KategoriController`. Teruji |
+| W5-10 | Search Item | Pieter | | 🔍 REVIEW | Cari berdasarkan kode, nama, dan kategori sudah jalan, **belum ada test** (TC-INV-04) |
+| W5-11 | Inventory Validation | Alexander | | ✅ DONE | Validasi form + kode obat unik. Teruji |
+| W5-12 | Inventory Test | All | | 🔄 IN PROGRESS | `ObatTest` & `KategoriTest` jalan. Kurang test pencarian dan validasi input tidak valid |
 
 ## Temuan Gap Analysis (Tambahan)
 
@@ -151,13 +154,24 @@ Task yang muncul dari pengecekan kode terhadap Implementation Plan.
 | GAP-03 | Validasi ke mitra: modul supplier & pembelian tetap dikerjakan atau masuk backlog | Alexander | W1-08 | 📋 TODO | Belum ada di Core MVP, tapi tabelnya sudah dibuat |
 | GAP-04 | Sesuaikan seeder dengan data 2 apotek (Badan Sehat & Salam Sehat) | Samuel | GAP-01 | 📋 TODO | |
 | GAP-05 | Lengkapi test TC-AUTH-05 (halaman yang dilindungi tidak bisa dibuka setelah logout) | Alexander | — | 📋 TODO | |
+| GAP-06 | Hapus atau perbaiki `resources/views/kasir/obat/index.blade.php` | Pieter | — | 📋 TODO | View rusak: memanggil route `kasir.obat.index` yang tidak ada, dan tidak dipakai controller mana pun |
+
+## Fitur Tambahan di Luar Rencana Awal
+
+Sudah dikerjakan tetapi tidak ada di daftar task Implementation Plan.
+
+| ID | Task | Owner | Status | Catatan |
+|---|---|---|---|---|
+| EX-01 | CRUD Kategori Obat | Alexander | ✅ DONE | Tabel `kategori` + relasi ke obat, kategori yang masih dipakai tidak bisa dihapus. Teruji (`KategoriTest`) |
+| EX-02 | Menu sidebar mengikuti role & permission | Alexander | ✅ DONE | Menu yang tidak boleh diakses disembunyikan. Teruji (`SidebarTest`), termasuk test yang membuka semua menu untuk memastikan tidak ada yang berujung 403 |
+| EX-03 | Deploy tanpa npm | Alexander | ✅ DONE | Hasil build CSS/JS ikut disimpan di repo, hosting cukup upload. Langkah hosting ditulis di `README.md`. Mendukung W11-07 dan W11-09 |
 
 ## Minggu 6 — Cashier & Sales Transaction
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W6-01 | Cashier Page | Pieter + Roman | | 🗂️ BACKLOG | |
-| W6-02 | Product Search in Cashier | Pieter | | 🗂️ BACKLOG | |
+| W6-01 | Cashier Page | Pieter + Roman | | 🔄 IN PROGRESS | Layar POS dua kolom sudah jadi (daftar obat dari database + keranjang), tombol masih nonaktif menunggu backend |
+| W6-02 | Product Search in Cashier | Pieter | | 📋 TODO | Kolom pencarian sudah ada di layar kasir tetapi masih dinonaktifkan |
 | W6-03 | Add Item to Cart | Pieter + Alexander | | 🗂️ BACKLOG | |
 | W6-04 | Quantity Input | Pieter | | 🗂️ BACKLOG | |
 | W6-05 | Quantity Validation | Alexander | | 🗂️ BACKLOG | |
@@ -168,7 +182,7 @@ Task yang muncul dari pengecekan kode terhadap Implementation Plan.
 | W6-10 | Transaction Detail | Alexander | | 🗂️ BACKLOG | Critical |
 | W6-11 | Transaction Number | Alexander | | 🗂️ BACKLOG | |
 | W6-12 | Date/Time Transaction | Alexander | | 🗂️ BACKLOG | |
-| W6-13 | Checkout UI | Roman + Pieter | | 🗂️ BACKLOG | Critical |
+| W6-13 | Checkout UI | Roman + Pieter | | 🔄 IN PROGRESS | Critical. Ringkasan subtotal/diskon/total sudah tampil, tombol bayar nonaktif |
 | W6-14 | Transaction Result | Pieter | | 🗂️ BACKLOG | |
 | W6-15 | Transaction Testing | All | | 🗂️ BACKLOG | |
 
@@ -192,7 +206,7 @@ Task yang muncul dari pengecekan kode terhadap Implementation Plan.
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
 | W8-01 | Transaction History Backend | Alexander | | 🗂️ BACKLOG | |
-| W8-02 | Transaction History UI | Pieter | | 🗂️ BACKLOG | |
+| W8-02 | Transaction History UI | Pieter | | 🔄 IN PROGRESS | Halaman riwayat + total harian sudah jadi, isinya masih data contoh |
 | W8-03 | Transaction Detail View | Pieter | | 🗂️ BACKLOG | |
 | W8-04 | Inventory Report | Alexander + Pieter | | 🗂️ BACKLOG | |
 | W8-05 | Transaction Report | Alexander + Pieter | | 🗂️ BACKLOG | |
@@ -290,14 +304,17 @@ Penanda: ✅ PASS · ❌ FAIL · 🟡 SEBAGIAN · ⬜ BELUM DIJALANKAN
 | TC-PHARM-05 | Transaction A tidak muncul pada User B | ⬜ |
 | TC-PHARM-06 | Stock A tidak berubah akibat transaction B | ⬜ |
 
-### Inventory — 0/5
-| ID | Skenario | Status |
-|---|---|---|
-| TC-INV-01 | Add item | ⬜ |
-| TC-INV-02 | Edit item | ⬜ |
-| TC-INV-03 | Delete item | ⬜ |
-| TC-INV-04 | Search item | ⬜ |
-| TC-INV-05 | Invalid input | ⬜ |
+### Inventory — 3/5
+| ID | Skenario | Status | Bukti |
+|---|---|---|---|
+| TC-INV-01 | Add item | ✅ PASS | `ObatTest::test_admin_dapat_menjalankan_crud_obat` |
+| TC-INV-02 | Edit item | ✅ PASS | `ObatTest::test_admin_dapat_menjalankan_crud_obat` |
+| TC-INV-03 | Delete item | ✅ PASS | `ObatTest::test_admin_dapat_menjalankan_crud_obat` |
+| TC-INV-04 | Search item | 🟡 SEBAGIAN | Fitur jalan di `ObatController@index`, belum ada test (W5-10) |
+| TC-INV-05 | Invalid input | 🟡 SEBAGIAN | Baru kode obat duplikat yang diuji, validasi lain belum (W5-12) |
+
+> Di luar daftar Implementation Plan, sudah ada juga test untuk CRUD kategori
+> (`KategoriTest`) dan untuk menu sidebar sesuai hak akses (`SidebarTest`).
 
 ### Cashier — 0/9
 | ID | Skenario | Status |
@@ -339,7 +356,7 @@ Penanda: ✅ PASS · ❌ FAIL · 🟡 SEBAGIAN · ⬜ BELUM DIJALANKAN
 | G1 | End W1 | Proses dan masalah tervalidasi | ⬜ |
 | G2 | End W2 | Requirement + scope baseline | ⬜ |
 | G3 | End W3 | UML + ERD + UI/UX siap | ⬜ |
-| G4 | End W4 | Development environment siap | 🟡 3/5 syarat terpenuhi |
+| G4 | End W4 | Development environment siap | ✅ TERPENUHI |
 | G5 | End W7 | Core transaction-stock flow stabil | ⬜ |
 | G6 | End W9 | Feature freeze | ⬜ |
 | G7 | End W10 | System testing selesai | ⬜ |

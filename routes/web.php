@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ObatController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -16,6 +17,11 @@ Route::middleware('auth')->group(function () {
 
     // Pengarah ke dashboard sesuai role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('obat', ObatController::class)->only(['create', 'store', 'edit', 'update', 'destroy'])
+        ->middleware('permission:obat.kelola');
+    Route::resource('obat', ObatController::class)->only(['index', 'show'])
+        ->middleware('permission:obat.lihat');
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');

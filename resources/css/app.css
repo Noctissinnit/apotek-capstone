@@ -45,4 +45,91 @@
     .form-select {
         @apply cursor-pointer appearance-none pr-10;
     }
+
+    .stat-card {
+        @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100;
+    }
+
+    .stat-label {
+        @apply text-sm font-medium text-slate-500;
+    }
+
+    .stat-value {
+        @apply mt-3 text-3xl font-bold tracking-tight text-slate-900;
+    }
+
+    .panel-card {
+        @apply overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100;
+    }
+
+    .panel-header {
+        @apply flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-5 py-4;
+    }
+
+    .panel-title {
+        @apply text-base font-semibold text-slate-900;
+    }
+
+    .soft-input {
+        @apply w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100;
+    }
+
+    .soft-button {
+        @apply inline-flex items-center justify-center rounded-xl px-3.5 py-2 text-sm font-semibold transition;
+        @apply focus-visible:ring-4 focus-visible:ring-emerald-100 focus-visible:outline-none;
+        @apply disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700;
+        @apply focus-visible:ring-4 focus-visible:ring-emerald-200 focus-visible:outline-none;
+        @apply disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700;
+        @apply focus-visible:ring-4 focus-visible:ring-emerald-100 focus-visible:outline-none;
+        @apply disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-slate-200 disabled:hover:text-slate-700;
+    }
+
+    .panel-body {
+        @apply p-5;
+    }
+
+    /* Baris daftar yang bisa diklik/ditambahkan */
+    .list-row {
+        @apply flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-emerald-300 hover:bg-emerald-50/40;
+    }
+
+    .badge-neutral {
+        @apply inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600;
+    }
+
+    .badge-success {
+        @apply inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700;
+    }
+
+    .badge-warning {
+        @apply inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700;
+    }
+
+    .badge-danger {
+        @apply inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700;
+    }
+
+    .table-head {
+        @apply bg-slate-50 text-xs tracking-wide text-slate-500 uppercase;
+    }
+
+    .table-th {
+        @apply px-5 py-3 font-semibold;
+    }
+
+    .table-td {
+        @apply px-5 py-3 text-slate-700;
+    }
+
+    .empty-state {
+        @apply flex flex-col items-center justify-center gap-2 px-5 py-10 text-center text-sm text-slate-500;
+    }
 }

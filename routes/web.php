@@ -38,5 +38,10 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
+        Route::get('/transaksi', [DashboardController::class, 'transaksi'])->name('transaksi');
+        // Keranjang kini menyatu dengan layar transaksi; link lama tetap diarahkan ke sana
+        Route::redirect('/keranjang', '/kasir/transaksi')->name('keranjang');
+        Route::get('/riwayat', [DashboardController::class, 'riwayat'])->name('riwayat');
+        Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring');
     });
 });

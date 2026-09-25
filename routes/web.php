@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -19,6 +20,10 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+    });
+
+    Route::middleware(['role:admin', 'permission:user.kelola'])->group(function () {
+        Route::resource('admin/users', UserController::class)->names('user')->except('show');
     });
 
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {

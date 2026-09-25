@@ -12,14 +12,17 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        return view('users.index', [
+        return view('admin.users.index', [
             'users' => User::with('roles')->latest()->paginate(10),
+            'totalUser' => User::count(),
+            'totalAdmin' => User::role('admin')->count(),
+            'totalKasir' => User::role('kasir')->count(),
         ]);
     }
 
     public function create(): View
     {
-        return view('users.create', ['user' => new User]);
+        return view('admin.users.create', ['user' => new User]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -31,12 +34,12 @@ class UserController extends Controller
         $user = User::create($data);
         $user->syncRoles($role);
 
-        return redirect()->route('user.index')->with('success', 'User berhasil ditambahkan.');
+        return redirect()->route('admin.user.index')->with('success', 'User berhasil ditambahkan.');
     }
 
     public function edit(User $user): View
     {
-        return view('users.edit', compact('user'));
+        return view('admin.users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -52,7 +55,7 @@ class UserController extends Controller
         $user->update($data);
         $user->syncRoles($role);
 
-        return redirect()->route('user.index')->with('success', 'User berhasil diperbarui.');
+        return redirect()->route('admin.user.index')->with('success', 'User berhasil diperbarui.');
     }
 
     public function destroy(User $user): RedirectResponse
@@ -67,7 +70,7 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
+        return redirect()->route('admin.user.index')->with('success', 'User berhasil dihapus.');
     }
 
     /**

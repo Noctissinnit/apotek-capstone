@@ -20,10 +20,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
-    });
 
-    Route::middleware(['role:admin', 'permission:user.kelola'])->group(function () {
-        Route::resource('admin/users', UserController::class)->names('user')->except('show');
+        Route::resource('users', UserController::class)
+            ->names('user')
+            ->except('show')
+            ->middleware('permission:user.kelola');
     });
 
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {

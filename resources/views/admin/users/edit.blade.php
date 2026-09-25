@@ -5,5 +5,5 @@
 @section('subheader', 'Perbarui data dan role user')
 
 @section('content')
-    @include('users.form', ['action' => route('user.update', $user), 'method' => 'PUT', 'submitLabel' => 'Simpan Perubahan'])
+    @include('admin.users.form', ['action' => route('admin.user.update', $user), 'method' => 'PUT', 'submitLabel' => 'Simpan Perubahan'])
 @endsection

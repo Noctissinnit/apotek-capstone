@@ -5,5 +5,5 @@
 @section('subheader', 'Buat akun baru dan tentukan role aksesnya')
 
 @section('content')
-    @include('users.form', ['action' => route('user.store'), 'method' => 'POST', 'submitLabel' => 'Simpan User'])
+    @include('admin.users.form', ['action' => route('admin.user.store'), 'method' => 'POST', 'submitLabel' => 'Simpan User'])
 @endsection

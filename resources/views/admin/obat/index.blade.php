@@ -48,7 +48,7 @@
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3 font-medium text-slate-900">{{ $item->kode_obat }}</td>
                     <td class="px-5 py-3">{{ $item->nama_obat }}</td>
-                    <td class="px-5 py-3">{{ $item->kategori ?: '-' }}</td>
+                    <td class="px-5 py-3">{{ $item->kategoriRelasi?->nama_kategori ?: ($item->kategori ?: '-') }}</td>
                     <td class="px-5 py-3">{{ $item->satuan }}</td>
                     <td class="px-5 py-3 text-right">Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
                     <td class="px-5 py-3 text-right"><span @class(['font-medium text-red-600'=> $item->stok <= $item->stok_minimum])>{{ number_format($item->stok) }} {{ $item->satuan }}</span></td>

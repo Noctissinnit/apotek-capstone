@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Obat;
+use App\Models\Kategori;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,10 +23,11 @@ class ObatTest extends TestCase
     public function test_admin_dapat_menjalankan_crud_obat(): void
     {
         $admin = User::factory()->create()->assignRole('admin');
+        $kategori = Kategori::create(['nama_kategori' => 'Vitamin']);
         $data = [
             'kode_obat' => 'OBT999',
             'nama_obat' => 'Obat Test',
-            'kategori' => 'Vitamin',
+            'kategori_id' => $kategori->id_kategori,
             'satuan' => 'Botol',
             'harga_beli' => 10000,
             'harga_jual' => 15000,
@@ -84,9 +86,12 @@ class ObatTest extends TestCase
     public function test_data_obat_dapat_diurutkan_naik_dan_turun_berdasarkan_semua_kolom(): void
     {
         $admin = User::factory()->create()->assignRole('admin');
-        Obat::create(['kode_obat' => 'C03', 'nama_obat' => 'Zinc', 'kategori' => 'Vitamin', 'satuan' => 'Box', 'harga_jual' => 30000, 'stok' => 5]);
-        Obat::create(['kode_obat' => 'A01', 'nama_obat' => 'Alpha', 'kategori' => 'Obat Bebas', 'satuan' => 'Botol', 'harga_jual' => 5000, 'stok' => 20]);
-        Obat::create(['kode_obat' => 'B02', 'nama_obat' => 'Beta', 'kategori' => 'Obat Keras', 'satuan' => 'Strip', 'harga_jual' => 15000, 'stok' => 10]);
+        $bebas = Kategori::create(['nama_kategori' => 'Obat Bebas']);
+        $vitamin = Kategori::create(['nama_kategori' => 'Vitamin']);
+        $keras = Kategori::create(['nama_kategori' => 'Obat Keras']);
+        Obat::create(['kode_obat' => 'C03', 'nama_obat' => 'Zinc', 'kategori_id' => $vitamin->id_kategori, 'satuan' => 'Box', 'harga_jual' => 30000, 'stok' => 5]);
+        Obat::create(['kode_obat' => 'A01', 'nama_obat' => 'Alpha', 'kategori_id' => $bebas->id_kategori, 'satuan' => 'Botol', 'harga_jual' => 5000, 'stok' => 20]);
+        Obat::create(['kode_obat' => 'B02', 'nama_obat' => 'Beta', 'kategori_id' => $keras->id_kategori, 'satuan' => 'Strip', 'harga_jual' => 15000, 'stok' => 10]);
 
         $sortCases = [
             'kode' => ['A01', 'B02', 'C03'],
@@ -137,5 +142,22 @@ class ObatTest extends TestCase
             ->assertOk()
             ->assertSee('OBT011')
             ->assertDontSee('OBT001');
+    }
+
+    public function test_admin_dapat_mengelola_kategori_obat(): void
+    {
+        $admin = User::factory()->create()->assignRole('admin');
+
+        $this->actingAs($admin)->post(route('kategori.store'), ['nama_kategori' => 'Herbal'])
+            ->assertRedirect(route('kategori.index'));
+
+        $kategori = Kategori::where('nama_kategori', 'Herbal')->firstOrFail();
+        $this->actingAs($admin)->put(route('kategori.update', $kategori), ['nama_kategori' => 'Herbal Modern'])
+            ->assertRedirect(route('kategori.index'));
+        $this->assertDatabaseHas('kategori', ['id_kategori' => $kategori->id_kategori, 'nama_kategori' => 'Herbal Modern']);
+
+        $this->actingAs($admin)->delete(route('kategori.destroy', $kategori))
+            ->assertRedirect(route('kategori.index'));
+        $this->assertDatabaseMissing('kategori', ['id_kategori' => $kategori->id_kategori]);
     }
 }

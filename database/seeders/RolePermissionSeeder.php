@@ -18,6 +18,7 @@ class RolePermissionSeeder extends Seeder
             'user.kelola',
             'obat.lihat',
             'obat.kelola',
+            'kategori.kelola',
             'supplier.kelola',
             'pembelian.lihat',
             'pembelian.kelola',

@@ -1,0 +1,16 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Kategori;
+use Illuminate\Database\Seeder;
+
+class KategoriSeeder extends Seeder
+{
+    public function run(): void
+    {
+        foreach (['Obat Bebas', 'Obat Bebas Terbatas', 'Obat Keras', 'Vitamin'] as $namaKategori) {
+            Kategori::firstOrCreate(['nama_kategori' => $namaKategori]);
+        }
+    }
+}

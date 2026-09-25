@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Obat;
+use App\Models\Kategori;
 use Illuminate\Database\Seeder;
 
 class ObatSeeder extends Seeder
@@ -19,6 +20,8 @@ class ObatSeeder extends Seeder
         ];
 
         foreach ($obat as $item) {
+            $item['kategori_id'] = Kategori::firstOrCreate(['nama_kategori' => $item['kategori']])->id_kategori;
+            unset($item['kategori']);
             Obat::updateOrCreate(['kode_obat' => $item['kode_obat']], $item);
         }
     }

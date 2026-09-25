@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Obat extends Model
@@ -17,7 +18,7 @@ class Obat extends Model
     protected $fillable = [
         'kode_obat',
         'nama_obat',
-        'kategori',
+        'kategori_id',
         'satuan',
         'harga_beli',
         'harga_jual',
@@ -41,6 +42,11 @@ class Obat extends Model
     public function detailPembelian(): HasMany
     {
         return $this->hasMany(DetailPembelian::class);
+    }
+
+    public function kategoriRelasi(): BelongsTo
+    {
+        return $this->belongsTo(Kategori::class, 'kategori_id', 'id_kategori');
     }
 
     public function scopeStokMenipis(Builder $query): Builder

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\KategoriController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -22,6 +23,8 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:obat.kelola');
     Route::resource('obat', ObatController::class)->only(['index', 'show'])
         ->middleware('permission:obat.lihat');
+    Route::resource('kategori', KategoriController::class)->except(['show'])
+        ->middleware('permission:kategori.kelola');
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Obat;
+use App\Models\Kategori;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,7 +16,7 @@ class ObatController extends Controller
             'kode' => 'kode_obat',
             'nama' => 'nama_obat',
             'stok' => 'stok',
-            'kategori' => 'kategori',
+            'kategori' => 'kategori.nama_kategori',
             'satuan' => 'satuan',
             'harga_jual' => 'harga_jual',
         ];
@@ -24,15 +25,17 @@ class ObatController extends Controller
         $direction = $request->string('direction')->lower()->toString() === 'desc' ? 'desc' : 'asc';
 
         $obat = Obat::query()
+            ->with('kategoriRelasi')
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->trim();
 
                 $query->where(function ($query) use ($search) {
                     $query->where('kode_obat', 'like', "%{$search}%")
                         ->orWhere('nama_obat', 'like', "%{$search}%")
-                        ->orWhere('kategori', 'like', "%{$search}%");
+                        ->orWhereHas('kategoriRelasi', fn($query) => $query->where('nama_kategori', 'like', "%{$search}%"));
                 });
             })
+            ->when($sort === 'kategori', fn($query) => $query->leftJoin('kategori', 'obat.kategori_id', '=', 'kategori.id_kategori')->select('obat.*'))
             ->orderBy($sortableColumns[$sort], $direction)
             ->paginate(10)
             ->withQueryString();
@@ -42,7 +45,7 @@ class ObatController extends Controller
 
     public function create(): View
     {
-        return view('admin.obat.create');
+        return view('admin.obat.create', ['kategori' => Kategori::orderBy('nama_kategori')->get()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -59,7 +62,7 @@ class ObatController extends Controller
 
     public function edit(Obat $obat): View
     {
-        return view('admin.obat.edit', compact('obat'));
+        return view('admin.obat.edit', ['obat' => $obat, 'kategori' => Kategori::orderBy('nama_kategori')->get()]);
     }
 
     public function update(Request $request, Obat $obat): RedirectResponse
@@ -81,7 +84,7 @@ class ObatController extends Controller
         return $request->validate([
             'kode_obat' => ['required', 'string', 'max:20', 'unique:obat,kode_obat,' . ($obat?->id ?? 'NULL') . ',id'],
             'nama_obat' => ['required', 'string', 'max:255'],
-            'kategori' => ['nullable', 'string', 'max:50'],
+            'kategori_id' => ['nullable', 'integer', 'exists:kategori,id_kategori'],
             'satuan' => ['required', 'string', 'max:20'],
             'harga_beli' => ['required', 'numeric', 'min:0'],
             'harga_jual' => ['required', 'numeric', 'min:0'],

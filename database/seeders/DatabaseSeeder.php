@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
             SupplierSeeder::class,
+            KategoriSeeder::class,
             ObatSeeder::class,
             PembelianSeeder::class,
         ]);

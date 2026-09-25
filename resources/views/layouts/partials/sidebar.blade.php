@@ -8,7 +8,6 @@
         ],
         'Kasir' => [
             ['label' => 'Transaksi Penjualan', 'route' => 'kasir.transaksi', 'can' => 'dashboard.lihat', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'],
-            ['label' => 'Keranjang', 'route' => 'kasir.keranjang', 'can' => 'dashboard.lihat', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'],
             ['label' => 'Riwayat Transaksi', 'route' => 'kasir.riwayat', 'can' => 'dashboard.lihat', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
             ['label' => 'Monitoring Stok', 'route' => 'kasir.monitoring', 'can' => 'dashboard.lihat', 'icon' => 'M9 17v-6m3 6V7m3 10v-4M5 21h14'],
         ],

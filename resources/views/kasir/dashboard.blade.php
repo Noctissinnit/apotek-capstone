@@ -4,141 +4,89 @@
 @section('header', 'Dashboard Kasir')
 @section('subheader', 'Selamat bekerja, '.auth()->user()->name)
 
+@section('actions')
+    <a href="{{ route('kasir.transaksi') }}" class="btn-primary">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m7-7H5"/></svg>
+        Transaksi Baru
+    </a>
+@endsection
+
 @section('content')
     <div class="grid gap-4 sm:grid-cols-3">
         <div class="stat-card">
             <p class="stat-label">Jenis Obat</p>
-            <p class="stat-value text-emerald-600">{{ number_format($totalObat) }}</p>
+            <p class="stat-value text-slate-900">{{ number_format($totalObat) }}</p>
+            <p class="mt-1 text-xs text-slate-500">Terdaftar di sistem</p>
         </div>
         <div class="stat-card">
             <p class="stat-label">Stok Menipis</p>
-            <p class="stat-value text-amber-600">{{ $obatMenipis->count() }}</p>
+            <p class="stat-value {{ $obatMenipis->count() ? 'text-amber-600' : 'text-slate-900' }}">{{ $obatMenipis->count() }}</p>
+            <p class="mt-1 text-xs text-slate-500">Stok di bawah batas minimum</p>
         </div>
         <div class="stat-card">
             <p class="stat-label">Kadaluarsa &le; 3 Bulan</p>
-            <p class="stat-value text-red-600">{{ $obatHampirKadaluarsa->count() }}</p>
+            <p class="stat-value {{ $obatHampirKadaluarsa->count() ? 'text-red-600' : 'text-slate-900' }}">{{ $obatHampirKadaluarsa->count() }}</p>
+            <p class="mt-1 text-xs text-slate-500">Perlu diperiksa lebih dulu</p>
         </div>
     </div>
 
-    <div class="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <div class="space-y-6">
-            <div class="panel-card">
-                <div class="panel-header">
-                    <h2 class="panel-title">Transaksi Penjualan</h2>
-                    <button type="button" class="soft-button bg-emerald-600 text-white hover:bg-emerald-700">
-                        Baru
-                    </button>
-                </div>
-
-                <div class="p-5">
-                    <label for="cari-obat" class="mb-2 block text-sm font-medium text-slate-700">Cari Obat</label>
-                    <div class="relative">
-                        <input id="cari-obat" type="text" placeholder="Cari nama obat..." class="soft-input">
-                    </div>
-
-                    <div class="mt-4 space-y-3">
-                        @foreach (['Paracetamol 500 mg', 'Vitamin C 1000 mg', 'Amoxicillin 500 mg', 'Cetirizine 10 mg'] as $nama)
-                            <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/40">
-                                <div>
-                                    <p class="font-medium text-slate-800">{{ $nama }}</p>
-                                    <p class="text-xs text-slate-500">Stok: 12</p>
-                                </div>
-                                <button type="button" class="soft-button bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-emerald-100 hover:text-emerald-700">
-                                    + Tambah
-                                </button>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+    <div class="mt-6 grid gap-6 xl:grid-cols-2">
+        <div class="panel-card">
+            <div class="panel-header">
+                <h2 class="panel-title">Perlu Perhatian</h2>
+                <a href="{{ route('kasir.monitoring') }}" class="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+                    Lihat semua
+                </a>
             </div>
 
-            <div class="panel-card">
-                <div class="panel-header">
-                    <h2 class="panel-title">Riwayat Transaksi</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-slate-600">
-                            <tr>
-                                <th class="px-5 py-3 font-medium">Waktu</th>
-                                <th class="px-5 py-3 font-medium">Kasir</th>
-                                <th class="px-5 py-3 font-medium">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr>
-                                <td class="px-5 py-3 text-slate-700">08:45</td>
-                                <td class="px-5 py-3 text-slate-700">Kasir Apotek</td>
-                                <td class="px-5 py-3 font-medium text-slate-900">Rp 28.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 text-slate-700">09:15</td>
-                                <td class="px-5 py-3 text-slate-700">Kasir Apotek</td>
-                                <td class="px-5 py-3 font-medium text-slate-900">Rp 72.500</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 text-slate-700">10:20</td>
-                                <td class="px-5 py-3 text-slate-700">Kasir Apotek</td>
-                                <td class="px-5 py-3 font-medium text-slate-900">Rp 43.000</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <ul class="divide-y divide-slate-100" role="list">
+                @forelse ($obatMenipis->take(5) as $obat)
+                    <li class="flex items-center justify-between gap-3 px-5 py-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-slate-900">{{ $obat->nama_obat }}</p>
+                            <p class="text-xs text-slate-500">Minimum {{ $obat->stok_minimum }} {{ $obat->satuan }}</p>
+                        </div>
+                        <span class="{{ $obat->stok < 1 ? 'badge-danger' : 'badge-warning' }} shrink-0">
+                            Sisa {{ $obat->stok }}
+                        </span>
+                    </li>
+                @empty
+                    <li class="empty-state">
+                        <svg class="h-8 w-8 text-emerald-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p>Semua stok aman.</p>
+                    </li>
+                @endforelse
+            </ul>
         </div>
 
-        <div class="space-y-6">
-            <div class="panel-card">
-                <div class="panel-header">
-                    <h2 class="panel-title">Keranjang</h2>
+        <div class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">Transaksi Terakhir</h2>
+                    <p class="mt-0.5 text-xs text-amber-700">Data contoh, belum dari database</p>
                 </div>
-                <div class="p-5">
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-                            <div>
-                                <p class="font-medium text-slate-800">Paracetamol 500 mg</p>
-                                <p class="text-xs text-slate-500">1 x Rp 5.000</p>
-                            </div>
-                            <span class="font-medium text-slate-900">Rp 5.000</span>
-                        </div>
-                        <div class="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-                            <div>
-                                <p class="font-medium text-slate-800">Vitamin C 1000 mg</p>
-                                <p class="text-xs text-slate-500">2 x Rp 30.000</p>
-                            </div>
-                            <span class="font-medium text-slate-900">Rp 60.000</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-5 space-y-2 border-t border-slate-200 pt-4 text-sm">
-                        <div class="flex justify-between"><span class="text-slate-500">Subtotal</span><span class="font-medium text-slate-800">Rp 65.000</span></div>
-                        <div class="flex justify-between"><span class="text-slate-500">Diskon</span><span class="font-medium text-slate-800">Rp 0</span></div>
-                        <div class="flex justify-between"><span class="text-slate-500">Total</span><span class="text-lg font-semibold text-slate-900">Rp 65.000</span></div>
-                    </div>
-
-                    <button type="button" class="mt-5 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
-                        Proses Pembayaran
-                    </button>
-                </div>
+                <a href="{{ route('kasir.riwayat') }}" class="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+                    Lihat semua
+                </a>
             </div>
 
-            <div class="panel-card">
-                <div class="panel-header">
-                    <h2 class="panel-title">Monitoring Stok</h2>
-                </div>
-                <ul class="divide-y divide-slate-100 text-sm">
-                    @forelse ($obatMenipis as $obat)
-                        <li class="flex items-center justify-between px-5 py-3">
-                            <span>{{ $obat->nama_obat }}</span>
-                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                {{ $obat->stok }} / min {{ $obat->stok_minimum }} {{ $obat->satuan }}
-                            </span>
-                        </li>
-                    @empty
-                        <li class="px-5 py-6 text-center text-slate-500">Semua stok aman.</li>
-                    @endforelse
-                </ul>
-            </div>
+            <ul class="divide-y divide-slate-100" role="list">
+                @forelse ($riwayatTerakhir as $item)
+                    <li class="flex items-center justify-between gap-3 px-5 py-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-slate-900">{{ $item['no_faktur'] }}</p>
+                            <p class="text-xs text-slate-500">{{ $item['waktu'] }} &middot; {{ $item['item'] }} item</p>
+                        </div>
+                        <span class="shrink-0 text-sm font-semibold text-slate-900">
+                            Rp {{ number_format($item['total'], 0, ',', '.') }}
+                        </span>
+                    </li>
+                @empty
+                    <li class="empty-state">
+                        <p>Belum ada transaksi hari ini.</p>
+                    </li>
+                @endforelse
+            </ul>
         </div>
     </div>
 @endsection

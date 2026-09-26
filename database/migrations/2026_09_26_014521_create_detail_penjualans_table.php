@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_penjualan', function (Blueprint $table) {
+        Schema::create('detail_riwayat_penjualan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('penjualan_id')->constrained('penjualan')->cascadeOnDelete();
+            $table->foreignId('penjualan_id')->constrained('riwayat_penjualan')->cascadeOnDelete();
             $table->foreignId('obat_id')->constrained('obat')->restrictOnDelete();
             $table->unsignedInteger('jumlah');
             $table->decimal('harga_jual', 12, 2);
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_penjualan');
+        Schema::dropIfExists('detail_riwayat_penjualan');
     }
 };

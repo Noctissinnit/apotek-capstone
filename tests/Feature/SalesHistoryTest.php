@@ -6,8 +6,8 @@ use App\Models\Obat;
 use App\Models\Penjualan;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
-use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\PenjualanSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -81,10 +81,10 @@ class SalesHistoryTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertDatabaseCount('penjualan', 5);
+        $this->assertDatabaseCount('riwayat_penjualan', 5);
         $this->seed(PenjualanSeeder::class);
-        $this->assertDatabaseCount('penjualan', 5);
-        $this->assertDatabaseCount('detail_penjualan', 9);
+        $this->assertDatabaseCount('riwayat_penjualan', 5);
+        $this->assertDatabaseCount('detail_riwayat_penjualan', 9);
     }
 
     /**

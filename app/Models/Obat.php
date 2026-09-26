@@ -43,6 +43,11 @@ class Obat extends Model
         return $this->hasMany(DetailPembelian::class);
     }
 
+    public function detailPenjualan(): HasMany
+    {
+        return $this->hasMany(DetailPenjualan::class);
+    }
+
     public function scopeStokMenipis(Builder $query): Builder
     {
         return $query->whereColumn('stok', '<=', 'stok_minimum');

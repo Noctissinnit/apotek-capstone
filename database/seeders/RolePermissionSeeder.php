@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
             'supplier.kelola',
             'pembelian.lihat',
             'pembelian.kelola',
+            'penjualan.lihat',
         ];
 
         foreach ($permissions as $permission) {
@@ -32,6 +33,7 @@ class RolePermissionSeeder extends Seeder
         Role::firstOrCreate(['name' => 'kasir'])->syncPermissions([
             'dashboard.lihat',
             'obat.lihat',
+            'penjualan.lihat',
         ]);
     }
 }

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             ObatSeeder::class,
             PembelianSeeder::class,
+            PenjualanSeeder::class,
         ]);
     }
 }

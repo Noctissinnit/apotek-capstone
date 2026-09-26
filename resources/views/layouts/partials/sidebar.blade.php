@@ -12,6 +12,7 @@
         ],
         'Transaksi' => [
             ['label' => 'Pembelian', 'route' => 'pembelian.index', 'can' => 'pembelian.lihat', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'],
+            ['label' => 'Riwayat Penjualan', 'route' => 'kasir.penjualan.index', 'can' => 'penjualan.lihat', 'icon' => 'M9 14l2 2 4-4m5-3.5A11.95 11.95 0 0112 3a11.95 11.95 0 01-8 5.5V12c0 5 3.4 8.5 8 9 4.6-.5 8-4 8-9V8.5z'],
         ],
         'Pengaturan' => [
             ['label' => 'Manajemen User', 'route' => 'user.index', 'can' => 'user.kelola', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],

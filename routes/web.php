@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Kasir\PenjualanController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -23,5 +24,10 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
+
+        Route::middleware('permission:penjualan.lihat')->group(function () {
+            Route::get('/penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
+            Route::get('/penjualan/laporan/pdf', [PenjualanController::class, 'pdf'])->name('penjualan.pdf');
+        });
     });
 });

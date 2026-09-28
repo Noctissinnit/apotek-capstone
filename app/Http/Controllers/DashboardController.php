@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Obat;
 use App\Models\Pembelian;
+use App\Models\Penjualan;
 use App\Models\Supplier;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,7 +38,7 @@ class DashboardController extends Controller
             'totalObat' => Obat::count(),
             'obatMenipis' => Obat::stokMenipis()->orderBy('stok')->get(),
             'obatHampirKadaluarsa' => $this->obatHampirKadaluarsa(),
-            'riwayatTerakhir' => array_slice($this->riwayatDummy(), -3),
+            'riwayatTerakhir' => Penjualan::with('detail')->latest('tanggal_penjualan')->take(3)->get(),
         ]);
     }
 
@@ -45,13 +47,6 @@ class DashboardController extends Controller
         return view('kasir.transaksi.index', [
             'obat' => Obat::orderBy('nama_obat')->get(),
             'keranjang' => $this->keranjangDummy(),
-        ]);
-    }
-
-    public function riwayat(): View
-    {
-        return view('kasir.riwayat.index', [
-            'riwayat' => $this->riwayatDummy(),
         ]);
     }
 
@@ -65,7 +60,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Collection<int, Obat>
+     * @return Collection<int, Obat>
      */
     private function obatHampirKadaluarsa()
     {
@@ -85,20 +80,6 @@ class DashboardController extends Controller
         return [
             ['nama' => 'Paracetamol 500 mg', 'satuan' => 'Strip', 'jumlah' => 1, 'harga' => 5000],
             ['nama' => 'Vitamin C 1000 mg', 'satuan' => 'Tube', 'jumlah' => 2, 'harga' => 30000],
-        ];
-    }
-
-    /**
-     * Data contoh riwayat transaksi. Diganti data asli pada W8 (History & Reporting).
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function riwayatDummy(): array
-    {
-        return [
-            ['no_faktur' => 'TRX-20260925-001', 'waktu' => '08:45', 'kasir' => 'Kasir Apotek', 'item' => 3, 'total' => 28000],
-            ['no_faktur' => 'TRX-20260925-002', 'waktu' => '09:15', 'kasir' => 'Kasir Apotek', 'item' => 5, 'total' => 72500],
-            ['no_faktur' => 'TRX-20260925-003', 'waktu' => '10:20', 'kasir' => 'Kasir Apotek', 'item' => 2, 'total' => 43000],
         ];
     }
 }

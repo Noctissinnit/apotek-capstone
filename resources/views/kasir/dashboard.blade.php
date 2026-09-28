@@ -63,7 +63,7 @@
             <div class="panel-header">
                 <div>
                     <h2 class="panel-title">Transaksi Terakhir</h2>
-                    <p class="mt-0.5 text-xs text-amber-700">Data contoh, belum dari database</p>
+                    <p class="mt-0.5 text-xs text-slate-500">Penjualan terbaru</p>
                 </div>
                 <a href="{{ route('kasir.riwayat') }}" class="text-sm font-medium text-emerald-700 hover:text-emerald-800">
                     Lihat semua
@@ -74,11 +74,11 @@
                 @forelse ($riwayatTerakhir as $item)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
                         <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-slate-900">{{ $item['no_faktur'] }}</p>
-                            <p class="text-xs text-slate-500">{{ $item['waktu'] }} &middot; {{ $item['item'] }} item</p>
+                            <p class="truncate text-sm font-medium text-slate-900">{{ $item->no_faktur }}</p>
+                            <p class="text-xs text-slate-500">{{ $item->tanggal_penjualan->format('d/m/Y H:i') }} &middot; {{ $item->detail->sum('jumlah') }} item</p>
                         </div>
                         <span class="shrink-0 text-sm font-semibold text-slate-900">
-                            Rp {{ number_format($item['total'], 0, ',', '.') }}
+                            Rp {{ number_format($item->total, 0, ',', '.') }}
                         </span>
                     </li>
                 @empty

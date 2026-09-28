@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,7 +42,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/transaksi', [DashboardController::class, 'transaksi'])->name('transaksi');
         // Keranjang kini menyatu dengan layar transaksi; link lama tetap diarahkan ke sana
         Route::redirect('/keranjang', '/kasir/transaksi')->name('keranjang');
-        Route::get('/riwayat', [DashboardController::class, 'riwayat'])->name('riwayat');
+        Route::get('/riwayat', [PenjualanController::class, 'index'])->name('riwayat');
+        Route::get('/riwayat/laporan/pdf', [PenjualanController::class, 'exportPdf'])->name('riwayat.pdf');
         Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring');
     });
 });

@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             KategoriSeeder::class,
             ObatSeeder::class,
             PembelianSeeder::class,
+            PenjualanSeeder::class,
         ]);
     }
 }

@@ -12,6 +12,7 @@ class ObatController extends Controller
 {
     public function index(Request $request): View
     {
+        $user = $request->user();
         $sortableColumns = [
             'kode' => 'kode_obat',
             'nama' => 'nama_obat',
@@ -20,12 +21,22 @@ class ObatController extends Controller
             'satuan' => 'satuan',
             'harga_jual' => 'harga_jual',
         ];
-        $sort = $request->string('sort')->toString();
+        $sortOption = $request->string('sort_option')->toString();
+        $sort = $request->string('sort_by')->toString() ?: $request->string('sort')->toString();
+        $direction = $request->string('direction')->lower()->toString();
+
+        if ($sortOption !== '') {
+            [$sort, $direction] = array_pad(explode('|', $sortOption, 2), 2, 'asc');
+        }
+
         $sort = array_key_exists($sort, $sortableColumns) ? $sort : 'kode';
-        $direction = $request->string('direction')->lower()->toString() === 'desc' ? 'desc' : 'asc';
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
 
         $obat = Obat::query()
+            ->forUser($user)
             ->with('kategoriRelasi')
+            ->when($request->filled('kategori_id'), fn($query) => $query->where('obat.kategori_id', $request->integer('kategori_id')))
+            ->when($request->filled('satuan'), fn($query) => $query->where('satuan', $request->string('satuan')->toString()))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->trim();
 
@@ -40,7 +51,10 @@ class ObatController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.obat.index', compact('obat', 'sort', 'direction'));
+        $kategori = Kategori::orderBy('nama_kategori')->get();
+        $satuan = Obat::query()->forUser($user)->whereNotNull('satuan')->distinct()->orderBy('satuan')->pluck('satuan');
+
+        return view('admin.obat.index', compact('obat', 'sort', 'direction', 'kategori', 'satuan'));
     }
 
     public function create(): View
@@ -57,16 +71,21 @@ class ObatController extends Controller
 
     public function show(Obat $obat): View
     {
+        $this->ensureSameApotek($obat);
+
         return view('admin.obat.show', compact('obat'));
     }
 
     public function edit(Obat $obat): View
     {
+        $this->ensureSameApotek($obat);
+
         return view('admin.obat.edit', ['obat' => $obat, 'kategori' => Kategori::orderBy('nama_kategori')->get()]);
     }
 
     public function update(Request $request, Obat $obat): RedirectResponse
     {
+        $this->ensureSameApotek($obat);
         $obat->update($this->validatedData($request, $obat));
 
         return to_route('obat.index')->with('success', 'Data obat berhasil diperbarui.');
@@ -74,6 +93,7 @@ class ObatController extends Controller
 
     public function destroy(Obat $obat): RedirectResponse
     {
+        $this->ensureSameApotek($obat);
         $obat->delete();
 
         return to_route('obat.index')->with('success', 'Data obat berhasil dihapus.');
@@ -81,7 +101,7 @@ class ObatController extends Controller
 
     private function validatedData(Request $request, ?Obat $obat = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'kode_obat' => ['required', 'string', 'max:20', 'unique:obat,kode_obat,' . ($obat?->id ?? 'NULL') . ',id'],
             'nama_obat' => ['required', 'string', 'max:255'],
             'kategori_id' => ['nullable', 'integer', 'exists:kategori,id_kategori'],
@@ -93,5 +113,17 @@ class ObatController extends Controller
             'tanggal_kadaluarsa' => ['nullable', 'date'],
             'keterangan' => ['nullable', 'string'],
         ]);
+
+        $data['apotek'] = $request->user()->apotek;
+
+        return $data;
+    }
+
+    private function ensureSameApotek(Obat $obat): void
+    {
+        $user = request()->user();
+        $isLegacyAdminRecord = $obat->apotek === null && $user->isAdmin();
+
+        abort_unless($obat->apotek === $user->apotek || $isLegacyAdminRecord, 404);
     }
 }

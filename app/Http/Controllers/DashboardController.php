@@ -19,23 +19,27 @@ class DashboardController extends Controller
         return redirect()->route($request->user()->dashboardRoute());
     }
 
-    public function admin(): View
+    public function admin(Request $request): View
     {
+        $obat = Obat::query()->forUser($request->user());
+
         return view('admin.dashboard', [
-            'totalObat' => Obat::count(),
-            'stokMenipis' => Obat::stokMenipis()->count(),
+            'totalObat' => (clone $obat)->count(),
+            'stokMenipis' => (clone $obat)->stokMenipis()->count(),
             'totalSupplier' => Supplier::count(),
             'totalPembelianBulanIni' => Pembelian::whereBetween('tanggal_pembelian', [now()->startOfMonth(), now()->endOfMonth()])->sum('total'),
             'pembelianTerbaru' => Pembelian::with('supplier')->latest('tanggal_pembelian')->take(5)->get(),
         ]);
     }
 
-    public function kasir(): View
+    public function kasir(Request $request): View
     {
+        $obat = Obat::query()->forUser($request->user());
+
         return view('kasir.dashboard', [
-            'totalObat' => Obat::count(),
-            'obatMenipis' => Obat::stokMenipis()->orderBy('stok')->get(),
-            'obatHampirKadaluarsa' => Obat::whereNotNull('tanggal_kadaluarsa')
+            'totalObat' => (clone $obat)->count(),
+            'obatMenipis' => (clone $obat)->stokMenipis()->orderBy('stok')->get(),
+            'obatHampirKadaluarsa' => (clone $obat)->whereNotNull('tanggal_kadaluarsa')
                 ->whereDate('tanggal_kadaluarsa', '<=', now()->addMonths(3))
                 ->orderBy('tanggal_kadaluarsa')
                 ->get(),

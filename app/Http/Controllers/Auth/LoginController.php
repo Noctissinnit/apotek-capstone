@@ -25,11 +25,11 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $throttleKey = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+        $throttleKey = Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             throw ValidationException::withMessages([
-                'email' => 'Terlalu banyak percobaan login. Coba lagi dalam '.RateLimiter::availableIn($throttleKey).' detik.',
+                'email' => 'Terlalu banyak percobaan login. Coba lagi dalam ' . RateLimiter::availableIn($throttleKey) . ' detik.',
             ]);
         }
 
@@ -46,7 +46,7 @@ class LoginController extends Controller
         $user = $request->user();
 
         // User tanpa role tidak punya halaman tujuan
-        if (! $user->hasAnyRole(['admin', 'kasir'])) {
+        if (! $user->hasValidApotekRole()) {
             Auth::logout();
 
             throw ValidationException::withMessages([

@@ -2,6 +2,9 @@
 <div class="grid gap-4 sm:grid-cols-2">
     <div><label for="kode_obat" class="mb-1 block text-sm font-medium">Kode Obat</label><input id="kode_obat" name="kode_obat" value="{{ old('kode_obat', $obat->kode_obat ?? '') }}" required maxlength="20" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('kode_obat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div><label for="nama_obat" class="mb-1 block text-sm font-medium">Nama Obat</label><input id="nama_obat" name="nama_obat" value="{{ old('nama_obat', $obat->nama_obat ?? '') }}" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('nama_obat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
+    <div><span class="mb-1 block text-sm font-medium">Apotek</span>
+        <div class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">{{ auth()->user()->apotek }}</div>
+    </div>
     <div><label for="kategori_id" class="mb-1 block text-sm font-medium">Kategori</label><select id="kategori_id" name="kategori_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
             <option value="">Pilih kategori</option>@foreach ($kategori as $item)<option value="{{ $item->id_kategori }}" @selected(old('kategori_id', $obat->kategori_id ?? '') == $item->id_kategori)>{{ $item->nama_kategori }}</option>@endforeach
         </select>@error('kategori_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>

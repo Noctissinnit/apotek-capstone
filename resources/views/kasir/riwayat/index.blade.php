@@ -9,7 +9,9 @@
         <div class="panel-header">
             <div>
                 <h2 class="panel-title">Semua Transaksi</h2>
-                <p class="mt-0.5 text-sm text-slate-500">{{ $riwayat->count() }} transaksi tersimpan</p>
+                <p class="mt-0.5 text-sm text-slate-500">
+                    Menampilkan {{ $riwayat->firstItem() ?? 0 }}-{{ $riwayat->lastItem() ?? 0 }} dari {{ $riwayat->total() }} transaksi
+                </p>
             </div>
             <div class="flex flex-wrap items-center justify-end gap-3">
                 <div class="text-right" data-testid="total-penjualan-hari-ini">
@@ -18,6 +20,18 @@
                 </div>
             </div>
         </div>
+
+        <form method="GET" action="{{ route('kasir.riwayat.pdf-rentang') }}" class="flex flex-wrap items-end gap-3 border-b border-slate-200 px-5 py-4">
+            <div>
+                <label for="tanggal_mulai" class="mb-1 block text-xs font-medium text-slate-600">Dari tanggal</label>
+                <input id="tanggal_mulai" name="tanggal_mulai" type="date" value="{{ $tanggalAwalLaporan }}" required class="soft-input w-48">
+            </div>
+            <div>
+                <label for="tanggal_selesai" class="mb-1 block text-xs font-medium text-slate-600">Sampai tanggal</label>
+                <input id="tanggal_selesai" name="tanggal_selesai" type="date" value="{{ $tanggalAkhirLaporan }}" required class="soft-input w-48">
+            </div>
+            <button type="submit" class="btn-primary">Unduh PDF semua transaksi</button>
+        </form>
 
         <div class="hidden overflow-x-auto sm:block">
             <table class="min-w-full text-left text-sm">
@@ -90,5 +104,11 @@
                 <li class="empty-state">Belum ada transaksi.</li>
             @endforelse
         </ul>
+
+        @if ($riwayat->hasPages())
+            <div class="border-t border-slate-200 px-5 py-4">
+                {{ $riwayat->links() }}
+            </div>
+        @endif
     </div>
 @endsection

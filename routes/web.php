@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
         // Keranjang kini menyatu dengan layar transaksi; link lama tetap diarahkan ke sana
         Route::redirect('/keranjang', '/kasir/transaksi')->name('keranjang');
         Route::get('/riwayat', [PenjualanController::class, 'index'])->name('riwayat');
+        Route::get('/riwayat/laporan/pdf', [PenjualanController::class, 'exportRentangPdf'])->name('riwayat.pdf-rentang');
         Route::get('/riwayat/{penjualan}/pdf', [PenjualanController::class, 'exportPdf'])->name('riwayat.pdf');
         Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring');
     });

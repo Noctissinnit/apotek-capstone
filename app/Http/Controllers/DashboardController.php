@@ -40,14 +40,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function transaksi(): View
-    {
-        return view('kasir.transaksi.index', [
-            'obat' => Obat::orderBy('nama_obat')->get(),
-            'keranjang' => $this->keranjangDummy(),
-        ]);
-    }
-
     public function riwayat(): View
     {
         return view('kasir.riwayat.index', [
@@ -73,19 +65,6 @@ class DashboardController extends Controller
             ->whereDate('tanggal_kadaluarsa', '<=', now()->addMonths(3))
             ->orderBy('tanggal_kadaluarsa')
             ->get();
-    }
-
-    /**
-     * Data contoh keranjang. Diganti data asli pada W6 (Cashier & Sales Transaction).
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function keranjangDummy(): array
-    {
-        return [
-            ['nama' => 'Paracetamol 500 mg', 'satuan' => 'Strip', 'jumlah' => 1, 'harga' => 5000],
-            ['nama' => 'Vitamin C 1000 mg', 'satuan' => 'Tube', 'jumlah' => 2, 'harga' => 30000],
-        ];
     }
 
     /**

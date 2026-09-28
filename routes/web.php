@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KasirTransaksiController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ObatController;
 use App\Http\Controllers\UserController;
@@ -38,9 +39,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
-        Route::get('/transaksi', [DashboardController::class, 'transaksi'])->name('transaksi');
-        // Keranjang kini menyatu dengan layar transaksi; link lama tetap diarahkan ke sana
-        Route::redirect('/keranjang', '/kasir/transaksi')->name('keranjang');
+        Route::get('/transaksi', [KasirTransaksiController::class, 'index'])->name('transaksi');
+        Route::get('/keranjang', [KasirTransaksiController::class, 'cart'])->name('keranjang');
+        Route::post('/keranjang', [KasirTransaksiController::class, 'add'])->name('keranjang.add');
+        Route::delete('/keranjang/{obat}', [KasirTransaksiController::class, 'remove'])->name('keranjang.remove');
+        Route::post('/checkout', [KasirTransaksiController::class, 'checkout'])->name('checkout');
         Route::get('/riwayat', [DashboardController::class, 'riwayat'])->name('riwayat');
         Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring');
     });

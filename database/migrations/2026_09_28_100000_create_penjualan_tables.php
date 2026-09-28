@@ -8,31 +8,36 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('penjualan', function (Blueprint $table) {
-            $table->id();
-            $table->string('no_faktur', 50)->unique();
-            $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
-            $table->dateTime('tanggal_penjualan')->index();
-            $table->decimal('total', 14, 2)->default(0);
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('riwayat_penjualan')) {
+            Schema::create('riwayat_penjualan', function (Blueprint $table) {
+                $table->id();
+                $table->string('no_transaksi', 50)->unique();
+                $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
+                $table->string('nama_pelanggan')->nullable();
+                $table->dateTime('tanggal_penjualan')->index();
+                $table->decimal('total', 14, 2)->default(0);
+                $table->string('metode_pembayaran', 30)->default('Tunai');
+                $table->text('keterangan')->nullable();
+                $table->timestamps();
+            });
+        }
 
-        Schema::create('detail_penjualan', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('penjualan_id')->constrained('penjualan')->cascadeOnDelete();
-            $table->foreignId('obat_id')->nullable()->constrained('obat')->nullOnDelete();
-            $table->string('nama_obat');
-            $table->string('satuan', 20);
-            $table->unsignedInteger('jumlah');
-            $table->decimal('harga_jual', 12, 2);
-            $table->decimal('subtotal', 14, 2);
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('detail_riwayat_penjualan')) {
+            Schema::create('detail_riwayat_penjualan', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('penjualan_id')->constrained('riwayat_penjualan')->cascadeOnDelete();
+                $table->foreignId('obat_id')->constrained('obat')->restrictOnDelete();
+                $table->unsignedInteger('jumlah');
+                $table->decimal('harga_jual', 12, 2);
+                $table->decimal('subtotal', 14, 2);
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('detail_penjualan');
-        Schema::dropIfExists('penjualan');
+        Schema::dropIfExists('detail_riwayat_penjualan');
+        Schema::dropIfExists('riwayat_penjualan');
     }
 };

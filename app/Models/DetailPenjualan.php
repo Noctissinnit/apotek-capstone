@@ -7,13 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailPenjualan extends Model
 {
-    protected $table = 'detail_penjualan';
+    protected $table = 'detail_riwayat_penjualan';
 
     protected $fillable = [
         'penjualan_id',
         'obat_id',
-        'nama_obat',
-        'satuan',
         'jumlah',
         'harga_jual',
         'subtotal',

@@ -36,7 +36,7 @@ class PenjualanSeeder extends Seeder
             foreach ($transaksi as $data) {
                 $tanggal = $data['tanggal'];
                 $penjualan = Penjualan::updateOrCreate(
-                    ['no_faktur' => 'TRX-'.$tanggal->format('Ymd').'-'.str_pad((string) $data['nomor'], 3, '0', STR_PAD_LEFT)],
+                    ['no_transaksi' => 'TRX-'.$tanggal->format('Ymd').'-'.str_pad((string) $data['nomor'], 3, '0', STR_PAD_LEFT)],
                     [
                         'user_id' => $kasir->id,
                         'tanggal_penjualan' => $tanggal,
@@ -53,8 +53,6 @@ class PenjualanSeeder extends Seeder
 
                     $penjualan->detail()->create([
                         'obat_id' => $obat->id,
-                        'nama_obat' => $obat->nama_obat,
-                        'satuan' => $obat->satuan,
                         'jumlah' => $jumlah,
                         'harga_jual' => $obat->harga_jual,
                         'subtotal' => $subtotal,

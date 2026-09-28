@@ -38,7 +38,7 @@ class DashboardController extends Controller
             'totalObat' => Obat::count(),
             'obatMenipis' => Obat::stokMenipis()->orderBy('stok')->get(),
             'obatHampirKadaluarsa' => $this->obatHampirKadaluarsa(),
-            'riwayatTerakhir' => Penjualan::with('detail')->latest('tanggal_penjualan')->take(3)->get(),
+            'riwayatTerakhir' => Penjualan::with('detail.obat')->latest('tanggal_penjualan')->take(3)->get(),
         ]);
     }
 

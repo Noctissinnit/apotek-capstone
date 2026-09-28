@@ -11,13 +11,16 @@ class Penjualan extends Model
 {
     use HasFactory;
 
-    protected $table = 'penjualan';
+    protected $table = 'riwayat_penjualan';
 
     protected $fillable = [
-        'no_faktur',
+        'no_transaksi',
         'user_id',
+        'nama_pelanggan',
         'tanggal_penjualan',
         'total',
+        'metode_pembayaran',
+        'keterangan',
     ];
 
     protected function casts(): array

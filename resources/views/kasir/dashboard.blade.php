@@ -74,7 +74,7 @@
                 @forelse ($riwayatTerakhir as $item)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
                         <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-slate-900">{{ $item->no_faktur }}</p>
+                            <p class="truncate text-sm font-medium text-slate-900">{{ $item->no_transaksi }}</p>
                             <p class="text-xs text-slate-500">{{ $item->tanggal_penjualan->format('d/m/Y H:i') }} &middot; {{ $item->detail->sum('jumlah') }} item</p>
                         </div>
                         <span class="shrink-0 text-sm font-semibold text-slate-900">

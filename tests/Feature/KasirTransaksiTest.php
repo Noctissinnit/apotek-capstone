@@ -103,6 +103,30 @@ class KasirTransaksiTest extends TestCase
         }
     }
 
+    public function test_notifikasi_pembayaran_berhasil_dikirim_ke_halaman(): void
+    {
+        $kasir = $this->kasir();
+        $obat = $this->obat();
+
+        $response = $this->actingAs($kasir)
+            ->withSession(['kasir.cart' => [$obat->id => 2]])
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'QRIS']);
+
+        $notifikasi = session('transaksi_sukses');
+
+        $this->assertIsArray($notifikasi);
+        $this->assertSame('QRIS', $notifikasi['metode_pembayaran']);
+        $this->assertSame('Rp 13.000', $notifikasi['total']);
+        $this->assertSame(2, $notifikasi['jumlah_item']);
+        $this->assertStringContainsString('/pdf', $notifikasi['url_struk']);
+
+        // halaman tujuan memuat data notifikasi untuk ditampilkan SweetAlert
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('id="transaksi-sukses"', false)
+            ->assertSee($notifikasi['no_faktur']);
+    }
+
     public function test_cara_pembayaran_di_luar_daftar_ditolak(): void
     {
         $kasir = $this->kasir();

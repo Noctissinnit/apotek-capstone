@@ -144,8 +144,15 @@ class KasirTransaksiController extends Controller
 
         $request->session()->forget('kasir.cart');
 
-        return redirect()->route('kasir.keranjang')
-            ->with('success', "Transaksi {$penjualan->no_faktur} berhasil. Total Rp ".number_format((float) $penjualan->total, 0, ',', '.')." ({$penjualan->metode_pembayaran}).");
+        // Dipakai layout untuk menampilkan notifikasi besar setelah pembayaran
+        return redirect()->route('kasir.keranjang')->with('transaksi_sukses', [
+            'no_faktur' => $penjualan->no_faktur,
+            'total' => 'Rp '.number_format((float) $penjualan->total, 0, ',', '.'),
+            'metode_pembayaran' => $penjualan->metode_pembayaran,
+            'jumlah_item' => array_sum($cart),
+            'url_struk' => route('kasir.riwayat.pdf', $penjualan),
+            'url_transaksi_baru' => route('kasir.transaksi'),
+        ]);
     }
 
     /** @return array<int, int> */

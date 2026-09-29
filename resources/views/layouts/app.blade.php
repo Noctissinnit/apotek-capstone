@@ -47,6 +47,20 @@
                     </div>
                 @endif
 
+                @if (session('transaksi_sukses'))
+                    {{-- Dibaca app.js untuk menampilkan notifikasi pembayaran berhasil --}}
+                    <script type="application/json" id="transaksi-sukses">@json(session('transaksi_sukses'))</script>
+
+                    {{-- Cadangan bila JavaScript mati --}}
+                    <noscript>
+                        <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                            Pembayaran berhasil. Faktur {{ session('transaksi_sukses')['no_faktur'] }},
+                            total {{ session('transaksi_sukses')['total'] }}
+                            ({{ session('transaksi_sukses')['metode_pembayaran'] }}).
+                        </div>
+                    </noscript>
+                @endif
+
                 @yield('content')
             </main>
 

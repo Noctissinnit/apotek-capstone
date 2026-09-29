@@ -20,6 +20,9 @@ class SidebarTest extends TestCase
 
     private function userWithRole(string $role): User
     {
+        // Role kini dipisah per apotek; test memakai Apotek A
+        $role = ['admin' => 'admin_apotek_a', 'kasir' => 'kasir_apotek_a'][$role] ?? $role;
+
         return User::factory()->create()->assignRole($role);
     }
 

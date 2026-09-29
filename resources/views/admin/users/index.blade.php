@@ -52,7 +52,7 @@
                     @forelse ($users as $user)
                         @php
                             $isSelf = $user->id === auth()->id();
-                            $adminTerakhir = $user->hasRole('admin') && $totalAdmin <= 1;
+                            $adminTerakhir = $user->isAdmin() && $totalAdmin <= 1;
                             $alasanKunci = match (true) {
                                 $isSelf => 'Akun yang sedang Anda gunakan tidak dapat dihapus.',
                                 $adminTerakhir => 'Admin terakhir tidak dapat dihapus.',
@@ -82,8 +82,8 @@
                             </td>
                             <td class="px-5 py-3">
                                 @forelse ($user->getRoleNames() as $role)
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ $role === 'admin' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">
-                                        {{ ucfirst($role) }}
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ str_contains($role, 'admin') ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">
+                                        {{ str($role)->replace('_', ' ')->title() }}
                                     </span>
                                 @empty
                                     <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Tanpa role</span>
@@ -136,7 +136,7 @@
             @forelse ($users as $user)
                 @php
                     $isSelf = $user->id === auth()->id();
-                    $adminTerakhir = $user->hasRole('admin') && $totalAdmin <= 1;
+                    $adminTerakhir = $user->isAdmin() && $totalAdmin <= 1;
                     $alasanKunci = match (true) {
                         $isSelf => 'Akun yang sedang Anda gunakan tidak dapat dihapus.',
                         $adminTerakhir => 'Admin terakhir tidak dapat dihapus.',
@@ -170,8 +170,8 @@
 
                             <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
                                 @forelse ($user->getRoleNames() as $role)
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ $role === 'admin' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">
-                                        {{ ucfirst($role) }}
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ str_contains($role, 'admin') ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">
+                                        {{ str($role)->replace('_', ' ')->title() }}
                                     </span>
                                 @empty
                                     <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Tanpa role</span>

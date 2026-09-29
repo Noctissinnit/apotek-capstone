@@ -12,34 +12,45 @@
 
 @section('content')
 <div class="rounded-xl border border-slate-200 bg-white">
-    <div class="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <form method="GET" action="{{ route('obat.index') }}" class="flex w-full gap-2 sm:max-w-md">
-            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kode, nama, atau kategori..." class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
-            <button type="submit" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cari</button>
+    <div class="border-b border-slate-200 p-5">
+        <form method="GET" action="{{ route('obat.index') }}" class="space-y-3">
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kode, nama, atau kategori..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+            <div class="flex flex-nowrap items-end gap-3 overflow-x-auto pb-1">
+                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Urutkan</span><select name="sort_option" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        <option value="kode|asc" @selected($sort==='kode' && $direction==='asc' )>Kode Obat (naik)</option>
+                        <option value="kode|desc" @selected($sort==='kode' && $direction==='desc' )>Kode Obat (turun)</option>
+                        <option value="nama|asc" @selected($sort==='nama' && $direction==='asc' )>Nama / Abjad (A-Z)</option>
+                        <option value="nama|desc" @selected($sort==='nama' && $direction==='desc' )>Nama / Abjad (Z-A)</option>
+                        <option value="harga_jual|asc" @selected($sort==='harga_jual' && $direction==='asc' )>Harga Jual (terendah)</option>
+                        <option value="harga_jual|desc" @selected($sort==='harga_jual' && $direction==='desc' )>Harga Jual (tertinggi)</option>
+                        <option value="stok|asc" @selected($sort==='stok' && $direction==='asc' )>Stok (terendah)</option>
+                        <option value="stok|desc" @selected($sort==='stok' && $direction==='desc' )>Stok (tertinggi)</option>
+                    </select></label>
+                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Kategori</span><select name="kategori_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        <option value="">Semua Kategori</option>@foreach ($kategori as $item)<option value="{{ $item->id_kategori }}" @selected((string) request('kategori_id')===(string) $item->id_kategori)>{{ $item->nama_kategori }}</option>@endforeach
+                    </select></label>
+                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Satuan</span><select name="satuan" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        <option value="">Semua Satuan</option>@foreach ($satuan as $item)<option value="{{ $item }}" @selected(request('satuan')===$item)>{{ $item }}</option>@endforeach
+                    </select></label>
+                <button type="submit" class="min-w-[120px] shrink-0 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900">Terapkan</button>
+            </div>
         </form>
-        <p class="text-sm text-slate-500">{{ $obat->total() }} jenis obat</p>
+        <div class="mt-3 flex items-center justify-between gap-3">
+            <p class="text-sm text-slate-500">{{ $obat->total() }} jenis obat</p><a href="{{ route('obat.index') }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Reset</a>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
         <table class="w-full min-w-[900px] text-left text-sm">
             <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                 <tr>
-                    @php
-                    $sortLink = function (string $column) use ($sort, $direction) {
-                    $nextDirection = $sort === $column && $direction === 'asc' ? 'desc' : 'asc';
-
-                    return route('obat.index', array_merge(request()->query(), ['sort' => $column, 'direction' => $nextDirection, 'page' => null]));
-                    };
-                    $sortIndicator = function (string $column) use ($sort, $direction) {
-                    return $sort === $column ? ($direction === 'asc' ? ' ↑' : ' ↓') : '';
-                    };
-                    @endphp
-                    <th class="px-5 py-3"><a href="{{ $sortLink('kode') }}" class="hover:text-slate-900">Kode{{ $sortIndicator('kode') }}</a></th>
-                    <th class="px-5 py-3"><a href="{{ $sortLink('nama') }}" class="hover:text-slate-900">Nama Obat{{ $sortIndicator('nama') }}</a></th>
-                    <th class="px-5 py-3"><a href="{{ $sortLink('kategori') }}" class="hover:text-slate-900">Kategori{{ $sortIndicator('kategori') }}</a></th>
-                    <th class="px-5 py-3"><a href="{{ $sortLink('satuan') }}" class="hover:text-slate-900">Satuan{{ $sortIndicator('satuan') }}</a></th>
-                    <th class="px-5 py-3 text-right"><a href="{{ $sortLink('harga_jual') }}" class="hover:text-slate-900">Harga Jual{{ $sortIndicator('harga_jual') }}</a></th>
-                    <th class="px-5 py-3 text-right"><a href="{{ $sortLink('stok') }}" class="hover:text-slate-900">Stok{{ $sortIndicator('stok') }}</a></th>
+                    <th class="px-5 py-3">Kode</th>
+                    <th class="px-5 py-3">Nama Obat</th>
+                    <th class="px-5 py-3">Apotek</th>
+                    <th class="px-5 py-3">Kategori</th>
+                    <th class="px-5 py-3">Satuan</th>
+                    <th class="px-5 py-3 text-right">Harga Jual</th>
+                    <th class="px-5 py-3 text-right">Stok</th>
                     <th class="px-5 py-3 text-right">Aksi</th>
                 </tr>
             </thead>
@@ -48,6 +59,7 @@
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3 font-medium text-slate-900">{{ $item->kode_obat }}</td>
                     <td class="px-5 py-3">{{ $item->nama_obat }}</td>
+                    <td class="px-5 py-3">{{ $item->apotek ?: '-' }}</td>
                     <td class="px-5 py-3">{{ $item->kategoriRelasi?->nama_kategori ?: ($item->kategori ?: '-') }}</td>
                     <td class="px-5 py-3">{{ $item->satuan }}</td>
                     <td class="px-5 py-3 text-right">Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
@@ -68,7 +80,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-5 py-8 text-center text-slate-500">Belum ada data obat.</td>
+                    <td colspan="8" class="px-5 py-8 text-center text-slate-500">Belum ada data obat.</td>
                 </tr>
                 @endforelse
             </tbody>

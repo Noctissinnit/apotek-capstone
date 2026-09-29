@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
 
 class Obat extends Model
 {
@@ -18,6 +19,7 @@ class Obat extends Model
     protected $fillable = [
         'kode_obat',
         'nama_obat',
+        'apotek',
         'kategori_id',
         'satuan',
         'harga_beli',
@@ -52,5 +54,16 @@ class Obat extends Model
     public function scopeStokMenipis(Builder $query): Builder
     {
         return $query->whereColumn('stok', '<=', 'stok_minimum');
+    }
+
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $query) use ($user) {
+            $query->where($query->getModel()->getTable() . '.apotek', $user->apotek);
+
+            if ($user->isAdmin()) {
+                $query->orWhereNull($query->getModel()->getTable() . '.apotek');
+            }
+        });
     }
 }

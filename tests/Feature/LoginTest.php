@@ -21,6 +21,8 @@ class LoginTest extends TestCase
 
     private function userWithRole(string $role): User
     {
+        $role = ['admin' => 'admin_apotek_a', 'kasir' => 'kasir_apotek_a'][$role] ?? $role;
+
         return User::factory()->create()->assignRole($role);
     }
 
@@ -54,6 +56,26 @@ class LoginTest extends TestCase
             ->assertRedirect(route('kasir.dashboard'));
 
         $this->get(route('kasir.dashboard'))->assertOk()->assertSee('Dashboard Kasir');
+    }
+
+    public function test_admin_apotek_b_login_diarahkan_ke_dashboard_admin(): void
+    {
+        $admin = User::factory()->create(['apotek' => 'Apotek B'])->assignRole('admin_apotek_b');
+
+        $this->post('/login', ['email' => $admin->email, 'password' => 'password'])
+            ->assertRedirect(route('admin.dashboard'));
+
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    public function test_role_dan_apotek_user_harus_sesuai(): void
+    {
+        $user = User::factory()->create(['apotek' => 'Apotek A'])->assignRole('kasir_apotek_b');
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
     }
 
     public function test_password_salah_ditolak(): void

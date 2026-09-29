@@ -25,6 +25,7 @@ class User extends Authenticatable
         'alamat',
         'kontak',
         'email',
+        'apotek',
         'password',
     ];
 
@@ -57,10 +58,36 @@ class User extends Authenticatable
     public function dashboardRoute(): string
     {
         return match (true) {
-            $this->hasRole('admin') => 'admin.dashboard',
-            $this->hasRole('kasir') => 'kasir.dashboard',
+            $this->isAdmin() => 'admin.dashboard',
+            $this->isKasir() => 'kasir.dashboard',
             default => 'login',
         };
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(['admin_apotek_a', 'admin_apotek_b']);
+    }
+
+    public function isKasir(): bool
+    {
+        return $this->hasAnyRole(['kasir_apotek_a', 'kasir_apotek_b']);
+    }
+
+    public function hasApotek(string $apotek): bool
+    {
+        return $this->apotek === $apotek;
+    }
+
+    public function hasValidApotekRole(): bool
+    {
+        $roleApotek = match (true) {
+            $this->hasAnyRole(['admin_apotek_a', 'kasir_apotek_a']) => 'Apotek A',
+            $this->hasAnyRole(['admin_apotek_b', 'kasir_apotek_b']) => 'Apotek B',
+            default => null,
+        };
+
+        return $roleApotek !== null && $this->apotek === $roleApotek;
     }
 
     public function pembelian(): HasMany

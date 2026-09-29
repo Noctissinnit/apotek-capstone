@@ -1,15 +1,24 @@
 @php
-    $roleTerpilih = old('role', $user->exists ? $user->getRoleNames()->first() : '');
+    // Nama role di database menggabungkan jabatan dan apotek, misalnya "kasir_apotek_b".
+    // Di form dipisah jadi dua pilihan supaya lebih mudah dibaca.
+    $roleSekarang = $user->exists ? (string) $user->getRoleNames()->first() : '';
+    $jabatanTerpilih = old('jabatan', str_contains($roleSekarang, 'admin') ? 'admin' : (str_contains($roleSekarang, 'kasir') ? 'kasir' : ''));
+    $apotekTerpilih = old('apotek', $user->apotek ?? '');
 
-    $daftarRole = [
+    $daftarJabatan = [
         'admin' => [
             'label' => 'Admin',
-            'deskripsi' => 'Kelola obat, supplier, pembelian, dan akun pengguna.',
+            'deskripsi' => 'Kelola obat, kategori, supplier, dan akun pengguna.',
         ],
         'kasir' => [
             'label' => 'Kasir',
             'deskripsi' => 'Melayani transaksi penjualan dan melihat data obat.',
         ],
+    ];
+
+    $daftarApotek = [
+        'Apotek A' => 'Hanya dapat mengakses data Apotek A.',
+        'Apotek B' => 'Hanya dapat mengakses data Apotek B.',
     ];
 @endphp
 
@@ -175,26 +184,51 @@
         </div>
 
         <fieldset class="sm:col-span-2">
-            <legend class="form-label">Role User <span class="text-red-500">*</span></legend>
+            <legend class="form-label">Jabatan <span class="text-red-500">*</span></legend>
             <div class="grid gap-3 sm:grid-cols-2">
-                @foreach ($daftarRole as $value => $role)
+                @foreach ($daftarJabatan as $value => $jabatan)
                     <label class="group relative flex cursor-pointer gap-3 rounded-xl border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
                         <input
                             type="radio"
-                            name="role"
+                            name="jabatan"
                             value="{{ $value }}"
                             required
-                            @checked($roleTerpilih === $value)
+                            @checked($jabatanTerpilih === $value)
                             class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-emerald-600 focus:ring-emerald-500"
                         >
                         <span>
-                            <span class="block text-sm font-semibold text-slate-900">{{ $role['label'] }}</span>
-                            <span class="mt-0.5 block text-xs text-slate-500">{{ $role['deskripsi'] }}</span>
+                            <span class="block text-sm font-semibold text-slate-900">{{ $jabatan['label'] }}</span>
+                            <span class="mt-0.5 block text-xs text-slate-500">{{ $jabatan['deskripsi'] }}</span>
                         </span>
                     </label>
                 @endforeach
             </div>
-            @error('role')
+            @error('jabatan')
+                <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+            @enderror
+        </fieldset>
+
+        <fieldset class="sm:col-span-2">
+            <legend class="form-label">Ditempatkan di <span class="text-red-500">*</span></legend>
+            <div class="grid gap-3 sm:grid-cols-2">
+                @foreach ($daftarApotek as $value => $keterangan)
+                    <label class="group relative flex cursor-pointer gap-3 rounded-xl border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
+                        <input
+                            type="radio"
+                            name="apotek"
+                            value="{{ $value }}"
+                            required
+                            @checked($apotekTerpilih === $value)
+                            class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        >
+                        <span>
+                            <span class="block text-sm font-semibold text-slate-900">{{ $value }}</span>
+                            <span class="mt-0.5 block text-xs text-slate-500">{{ $keterangan }}</span>
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+            @error('apotek')
                 <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
             @enderror
         </fieldset>

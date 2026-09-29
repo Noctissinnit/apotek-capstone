@@ -30,7 +30,7 @@ class PenjualanTest extends TestCase
 
     public function test_kasir_melihat_riwayat_dan_rincian_penjualan_dari_database(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
 
         $this->actingAs($kasir)
             ->get(route('kasir.riwayat'))
@@ -51,7 +51,7 @@ class PenjualanTest extends TestCase
 
     public function test_setiap_transaksi_mengunduh_pdf_masing_masing_dengan_nama_file_unik(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
         $transaksiHariIni = Penjualan::where('no_faktur', 'TRX-20260928-001')->firstOrFail();
         $transaksiKemarin = Penjualan::where('no_faktur', 'TRX-20260927-001')->firstOrFail();
 
@@ -73,7 +73,7 @@ class PenjualanTest extends TestCase
 
     public function test_pdf_hanya_dapat_dibuat_untuk_transaksi_yang_tersimpan(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
 
         $this->actingAs($kasir)
             ->get(route('kasir.riwayat.pdf', 999999))
@@ -82,7 +82,7 @@ class PenjualanTest extends TestCase
 
     public function test_laporan_pdf_gabungan_mengikuti_rentang_tanggal_yang_dipilih(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
 
         $response = $this->actingAs($kasir)->get(route('kasir.riwayat.pdf-rentang', [
             'tanggal_mulai' => '2026-09-27',
@@ -112,7 +112,7 @@ class PenjualanTest extends TestCase
 
     public function test_laporan_pdf_gabungan_menolak_rentang_tanggal_yang_tidak_valid(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
 
         $this->actingAs($kasir)
             ->get(route('kasir.riwayat.pdf-rentang', [
@@ -124,7 +124,7 @@ class PenjualanTest extends TestCase
 
     public function test_riwayat_menampilkan_lima_transaksi_per_halaman(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
 
         foreach (range(1, 7) as $nomor) {
             Penjualan::create([
@@ -166,7 +166,7 @@ class PenjualanTest extends TestCase
 
     public function test_hanya_kasir_yang_dapat_mengakses_riwayat_penjualan(): void
     {
-        $admin = User::where('email', 'admin@apotek.test')->firstOrFail();
+        $admin = User::where('email', 'admin.a@apotek.test')->firstOrFail();
 
         $this->actingAs($admin)
             ->get(route('kasir.riwayat'))

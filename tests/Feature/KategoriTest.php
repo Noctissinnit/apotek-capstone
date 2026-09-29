@@ -22,7 +22,7 @@ class KategoriTest extends TestCase
 
     public function test_admin_dapat_menjalankan_crud_kategori_dengan_id_otomatis(): void
     {
-        $admin = User::factory()->create()->assignRole('admin');
+        $admin = User::factory()->create()->assignRole('admin_apotek_a');
 
         $this->actingAs($admin)->get(route('kategori.index'))
             ->assertOk()
@@ -50,7 +50,7 @@ class KategoriTest extends TestCase
 
     public function test_kategori_yang_digunakan_obat_tidak_dapat_dihapus(): void
     {
-        $admin = User::factory()->create()->assignRole('admin');
+        $admin = User::factory()->create()->assignRole('admin_apotek_a');
         $kategori = Kategori::create(['nama_kategori' => 'Obat Bebas']);
         Obat::create([
             'kode_obat' => 'OBT001',
@@ -67,7 +67,7 @@ class KategoriTest extends TestCase
 
     public function test_kasir_tidak_dapat_mengelola_kategori(): void
     {
-        $kasir = User::factory()->create()->assignRole('kasir');
+        $kasir = User::factory()->create()->assignRole('kasir_apotek_a');
 
         $this->actingAs($kasir)->get(route('kategori.index'))->assertForbidden();
         $this->actingAs($kasir)->post(route('kategori.store'), ['nama_kategori' => 'Terlarang'])

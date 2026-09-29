@@ -28,11 +28,19 @@ class RolePermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        Role::firstOrCreate(['name' => 'admin'])->syncPermissions($permissions);
+        Role::whereIn('name', ['admin', 'kasir'])->get()->each->delete();
 
-        Role::firstOrCreate(['name' => 'kasir'])->syncPermissions([
+        foreach (['admin_apotek_a', 'admin_apotek_b'] as $role) {
+            Role::firstOrCreate(['name' => $role])->syncPermissions($permissions);
+        }
+
+        $kasirPermissions = [
             'dashboard.lihat',
             'obat.lihat',
-        ]);
+        ];
+
+        foreach (['kasir_apotek_a', 'kasir_apotek_b'] as $role) {
+            Role::firstOrCreate(['name' => $role])->syncPermissions($kasirPermissions);
+        }
     }
 }

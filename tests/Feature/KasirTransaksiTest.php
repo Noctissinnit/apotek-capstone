@@ -21,7 +21,7 @@ class KasirTransaksiTest extends TestCase
 
     private function kasir(): User
     {
-        return User::factory()->create()->assignRole('kasir');
+        return User::factory()->create()->assignRole('kasir_apotek_a');
     }
 
     private function obat(int $stok = 5): Obat

@@ -13,7 +13,7 @@ class PembelianSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::where('email', 'admin@apotek.test')->firstOrFail();
+        $admin = User::where('email', 'admin.a@apotek.test')->firstOrFail();
 
         $transaksi = [
             [

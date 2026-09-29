@@ -13,7 +13,7 @@ class PenjualanSeeder extends Seeder
 {
     public function run(): void
     {
-        $kasir = User::where('email', 'kasir@apotek.test')->firstOrFail();
+        $kasir = User::where('email', 'kasir.a@apotek.test')->firstOrFail();
         $transaksi = [
             [
                 'tanggal' => CarbonImmutable::today()->setTime(8, 45),

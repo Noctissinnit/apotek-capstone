@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('kategori', KategoriController::class)->except(['show'])
         ->middleware('permission:kategori.kelola');
 
-    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('role:admin_apotek_a|admin_apotek_b')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
         Route::resource('users', UserController::class)
@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:user.kelola');
     });
 
-    Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
+    Route::middleware('role:kasir_apotek_a|kasir_apotek_b')->prefix('kasir')->name('kasir.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
         Route::get('/transaksi', [KasirTransaksiController::class, 'index'])->name('transaksi');
         Route::get('/keranjang', [KasirTransaksiController::class, 'cart'])->name('keranjang');

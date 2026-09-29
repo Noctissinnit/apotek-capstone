@@ -1,7 +1,7 @@
 # Task Board — Sistem Inventaris & Kasir Apotek
 
 **Acuan:** Implementation Plan Capstone Project - Kelompok 1
-**Terakhir diperbarui:** 25 September 2026 (setelah merge `CRUD_Obat`, `feature/crud-user`, dan `feature/kasir` ke `development`)
+**Terakhir diperbarui:** 29 September 2026 (setelah merge `feature/keranjang`, `feature/laporan-penjualan`, dan `pemisahan_obat` ke `development`)
 
 ---
 
@@ -9,27 +9,32 @@
 
 | Bagian | Task | Progress |
 |---|---:|---|
-| **Keseluruhan** | 136 | `███░░░░░░░░░░░░░░░░░` **16%** |
+| **Keseluruhan** | 139 | `███████░░░░░░░░░░░░░` **35%** |
 | W1 — Requirement Validation | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W2 — Requirement Baseline | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W3 — Analysis & Design | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W4 — Technical Foundation | 11 | `███████████████░░░░░` 77% |
-| W5 — Auth, Pharmacy & Inventory | 12 | `██████████████░░░░░░` 69% |
-| GAP — Temuan Gap Analysis | 6 | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| W5 — Auth, Pharmacy & Inventory | 12 | `██████████████████░░` 90% |
+| GAP — Temuan Gap Analysis | 6 | `███████░░░░░░░░░░░░░` 33% |
 | EX — Fitur Tambahan | 3 | `████████████████████` 100% |
-| W6 — Cashier & Transaction | 15 | `█░░░░░░░░░░░░░░░░░░░` 7% |
-| W7 — Transaction ↔ Stock | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| W8 — History & Reporting | 9 | `█░░░░░░░░░░░░░░░░░░░` 6% |
+| **BUG — Bug Terbuka** | 3 | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| W6 — Cashier & Transaction | 15 | `████████████████░░░░` 80% |
+| W7 — Transaction ↔ Stock | 10 | `███████████░░░░░░░░░` 53% |
+| W8 — History & Reporting | 9 | `████████████████░░░░` 81% |
 | W9 — Hardening & Feature Freeze | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W10 — System Testing | 12 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W11 — UAT & Deployment | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W12 — Final Release | 14 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 
-**Jumlah per status:** ✅ DONE 18 · 🔍 REVIEW 1 · 🔄 IN PROGRESS 5 · 📋 TODO 38 · 🗂️ BACKLOG 74
+**Jumlah per status:** ✅ DONE 41 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 8 · 📋 TODO 41 · 🗂️ BACKLOG 44
 
-**Test scenario:** 7 / 35 PASS · 3 sebagian · 25 belum dijalankan
+**Test scenario:** 21 / 35 PASS · 4 sebagian · **4 GAGAL** · 6 belum dijalankan
 
-**Test otomatis:** 27 test, 148 assertion, seluruhnya lulus (`php artisan test`)
+**Test otomatis:** 44 test, 263 assertion, seluruhnya lulus (`php artisan test`)
+
+> ⚠️ **Ada 3 bug terbuka, dua di antaranya Critical.** Kasir masih bisa melihat dan
+> menjual obat milik apotek lain, dan riwayat penjualan belum disaring per apotek.
+> Menurut Definition of Release, jumlah bug Critical harus nol. Lihat bagian **Bug Terbuka**.
 
 ---
 
@@ -130,18 +135,18 @@
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W5-01 | User/Account Data | Alexander | | ✅ DONE | CRUD user + kolom alamat/kontak + role admin & kasir. Relasi ke apotek menyusul di W5-03 |
-| W5-02 | Pharmacy Data | Alexander | | 📋 TODO | Bergantung pada GAP-01 |
-| W5-03 | Account → Pharmacy Relationship | Alexander | | 📋 TODO | Critical |
+| W5-01 | User/Account Data | Alexander | | ✅ DONE | CRUD user + alamat/kontak + 4 role (admin/kasir × Apotek A/B) |
+| W5-02 | Pharmacy Data | Alexander | | 🔄 IN PROGRESS | Apotek disimpan sebagai teks di kolom `users.apotek` dan `obat.apotek`, belum ada tabel `apotek` tersendiri (lihat GAP-01) |
+| W5-03 | Account → Pharmacy Relationship | Alexander | | ✅ DONE | Critical. Tiap user punya apotek + role sesuai apoteknya; login menolak bila role dan apotek tidak cocok. Teruji |
 | W5-04 | Login Implementation | Alexander + Pieter | | ✅ DONE | Pengalihan sesuai role, batas 5 kali percobaan, logout. Teruji |
 | W5-05 | Session Protection | Alexander | | ✅ DONE | Middleware `auth`/`role`/`permission`, session diganti saat login dan dihapus saat logout |
-| W5-06 | Pharmacy Data Isolation Backend | Alexander | | 📋 TODO | Critical. Wajib di backend, bukan hanya frontend |
-| W5-07 | Inventory List UI | Pieter | | ✅ DONE | Tabel obat + urutkan semua kolom + 10 data per halaman. Teruji |
+| W5-06 | Pharmacy Data Isolation Backend | Alexander | | 🔄 IN PROGRESS | Critical. Data obat sudah disaring (`Obat::forUser`), tetapi **layar kasir dan riwayat penjualan belum** — lihat BUG-01 dan BUG-02 |
+| W5-07 | Inventory List UI | Pieter | | ✅ DONE | Tabel obat + urut semua kolom + saring kategori/satuan + 10 data per halaman. Teruji |
 | W5-08 | Add/Edit Item UI | Roman + Samuel | | ✅ DONE | Form tambah, ubah, detail, hapus |
 | W5-09 | CRUD Item Backend | Alexander | | ✅ DONE | Critical. `ObatController` + `KategoriController`. Teruji |
-| W5-10 | Search Item | Pieter | | 🔍 REVIEW | Cari berdasarkan kode, nama, dan kategori sudah jalan, **belum ada test** (TC-INV-04) |
+| W5-10 | Search Item | Pieter | | 🔍 REVIEW | Cari kode/nama/kategori jalan, penyaringan kategori & satuan sudah teruji, **pencarian teks belum ada test** (TC-INV-04) |
 | W5-11 | Inventory Validation | Alexander | | ✅ DONE | Validasi form + kode obat unik. Teruji |
-| W5-12 | Inventory Test | All | | 🔄 IN PROGRESS | `ObatTest` & `KategoriTest` jalan. Kurang test pencarian dan validasi input tidak valid |
+| W5-12 | Inventory Test | All | | ✅ DONE | `ObatTest` 10 test, `KategoriTest` 3 test, termasuk test pemisahan data antar apotek |
 
 ## Temuan Gap Analysis (Tambahan)
 
@@ -149,12 +154,20 @@ Task yang muncul dari pengecekan kode terhadap Implementation Plan.
 
 | ID | Task | Owner | Dependency | Status | Catatan |
 |---|---|---|---|---|---|
-| GAP-01 | Tambah entitas Apotek ke ERD & migrasi (`apotek`, `users.apotek_id`) | Alexander | W3-05 | 📋 TODO | Syarat untuk W5-02, W5-03, W5-06 |
-| GAP-02 | Putuskan model stok per apotek (`obat.apotek_id` atau tabel stok obat × apotek) | Alexander + All | W2-04, W3-05 | 📋 TODO | Syarat untuk TC-STK-05 |
+| GAP-01 | Jadikan apotek sebagai tabel tersendiri, bukan kolom teks | Alexander | W3-05 | 📋 TODO | Sekarang `users.apotek` dan `obat.apotek` berisi teks "Apotek A"/"Apotek B". Cukup untuk MVP, tapi rawan salah ketik dan sulit menambah apotek ketiga |
+| GAP-02 | Putuskan model stok per apotek | Alexander + All | W2-04 | ✅ DONE | Diputuskan: tiap baris obat milik satu apotek, stok ikut di baris itu |
 | GAP-03 | Validasi ke mitra: modul supplier & pembelian tetap dikerjakan atau masuk backlog | Alexander | W1-08 | 📋 TODO | Belum ada di Core MVP, tapi tabelnya sudah dibuat |
-| GAP-04 | Sesuaikan seeder dengan data 2 apotek (Badan Sehat & Salam Sehat) | Samuel | GAP-01 | 📋 TODO | |
-| GAP-05 | Lengkapi test TC-AUTH-05 (halaman yang dilindungi tidak bisa dibuka setelah logout) | Alexander | — | 📋 TODO | |
+| GAP-04 | Sesuaikan seeder dengan data 2 apotek | Samuel | GAP-01 | ✅ DONE | 4 akun (admin & kasir tiap apotek), 12 obat dibagi 6-6. Nama apotek masih "Apotek A"/"Apotek B", belum nama asli mitra |
+| GAP-05 | Lengkapi test TC-AUTH-05 (halaman terlindungi tidak bisa dibuka setelah logout) | Alexander | — | 📋 TODO | |
 | GAP-06 | Hapus atau perbaiki `resources/views/kasir/obat/index.blade.php` | Pieter | — | 📋 TODO | View rusak: memanggil route `kasir.obat.index` yang tidak ada, dan tidak dipakai controller mana pun |
+
+## Bug Terbuka
+
+| ID | Bug | Severity | Owner | Status | Catatan |
+|---|---|---|---|---|---|
+| BUG-01 | Kasir dapat melihat dan menjual obat milik apotek lain | **Critical** | Alexander | 📋 TODO | Sudah diverifikasi: Kasir Apotek A melihat "Ibuprofen 200 mg" (milik Apotek B) di layar transaksi. `KasirTransaksiController` memakai `Obat::query()` tanpa `forUser`. Termasuk contoh bug Critical di plan bagian 12 |
+| BUG-02 | Riwayat penjualan belum disaring per apotek | **Critical** | Alexander | 📋 TODO | `PenjualanController` mengambil semua transaksi. Belum terlihat karena Apotek B belum punya transaksi di seeder, tetapi akan bocor begitu ada. Melanggar TC-PHARM-05 |
+| BUG-03 | Transaksi penjualan tidak mencatat apotek | High | Alexander | 📋 TODO | Tabel `penjualan` tidak punya kolom apotek, jadi asal transaksi hanya bisa ditebak dari user pembuatnya. Menyulitkan laporan per apotek (W8-08) |
 
 ## Fitur Tambahan di Luar Rencana Awal
 
@@ -170,50 +183,50 @@ Sudah dikerjakan tetapi tidak ada di daftar task Implementation Plan.
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W6-01 | Cashier Page | Pieter + Roman | | 🔄 IN PROGRESS | Layar POS dua kolom sudah jadi (daftar obat dari database + keranjang), tombol masih nonaktif menunggu backend |
-| W6-02 | Product Search in Cashier | Pieter | | 📋 TODO | Kolom pencarian sudah ada di layar kasir tetapi masih dinonaktifkan |
-| W6-03 | Add Item to Cart | Pieter + Alexander | | 🗂️ BACKLOG | |
-| W6-04 | Quantity Input | Pieter | | 🗂️ BACKLOG | |
-| W6-05 | Quantity Validation | Alexander | | 🗂️ BACKLOG | |
-| W6-06 | Multi-Item Cart | Pieter + Samuel | | 🗂️ BACKLOG | |
-| W6-07 | Subtotal Calculation | Alexander + Pieter | | 🗂️ BACKLOG | |
-| W6-08 | Tax/Transaction Formula | Alexander + All | | 🗂️ BACKLOG | |
-| W6-09 | Transaction Header | Alexander | | 🗂️ BACKLOG | Critical. Tabel penjualan belum ada |
-| W6-10 | Transaction Detail | Alexander | | 🗂️ BACKLOG | Critical |
-| W6-11 | Transaction Number | Alexander | | 🗂️ BACKLOG | |
-| W6-12 | Date/Time Transaction | Alexander | | 🗂️ BACKLOG | |
-| W6-13 | Checkout UI | Roman + Pieter | | 🔄 IN PROGRESS | Critical. Ringkasan subtotal/diskon/total sudah tampil, tombol bayar nonaktif |
-| W6-14 | Transaction Result | Pieter | | 🗂️ BACKLOG | |
-| W6-15 | Transaction Testing | All | | 🗂️ BACKLOG | |
+| W6-01 | Cashier Page | Pieter + Roman | | ✅ DONE | Layar POS dua kolom: daftar obat + keranjang lengkap dengan total dan tombol bayar |
+| W6-02 | Product Search in Cashier | Pieter | | 🔍 REVIEW | Cari nama/kode obat sudah jalan, belum ada test |
+| W6-03 | Add Item to Cart | Pieter + Alexander | | ✅ DONE | Keranjang disimpan di session. Teruji |
+| W6-04 | Quantity Input | Pieter | | 🔄 IN PROGRESS | Backend sudah menerima jumlah, tetapi di layar kasir menambah hanya bisa satuan (tekan Tambah berulang). Belum ada kolom jumlah dan tombol ubah jumlah |
+| W6-05 | Quantity Validation | Alexander | | ✅ DONE | Penambahan ditolak bila melebihi stok. Teruji |
+| W6-06 | Multi-Item Cart | Pieter + Samuel | | 🔍 REVIEW | Keranjang menampung banyak jenis obat, tetapi belum ada test checkout dengan lebih dari satu jenis obat (TC-SAL-02) |
+| W6-07 | Subtotal Calculation | Alexander + Pieter | | ✅ DONE | Hitungan memakai satuan sen agar pembulatan tidak meleset |
+| W6-08 | Tax/Transaction Formula | Alexander + All | | 📋 TODO | Belum ada pajak maupun diskon. Perlu keputusan mitra dulu |
+| W6-09 | Transaction Header | Alexander | | ✅ DONE | Critical. Tabel `penjualan`. Teruji |
+| W6-10 | Transaction Detail | Alexander | | ✅ DONE | Critical. Tabel `detail_penjualan`. Teruji |
+| W6-11 | Transaction Number | Alexander | | ✅ DONE | Format `TRX-<tanggal>-<jam>-<5 huruf acak>` |
+| W6-12 | Date/Time Transaction | Alexander | | ✅ DONE | |
+| W6-13 | Checkout UI | Roman + Pieter | | ✅ DONE | Critical. Ringkasan dan tombol Proses Pembayaran di layar transaksi maupun halaman keranjang |
+| W6-14 | Transaction Result | Pieter | | 🔄 IN PROGRESS | Setelah bayar baru muncul pesan berisi no faktur dan total. Struk tersedia sebagai PDF di halaman riwayat, tetapi belum ada halaman hasil transaksi tersendiri |
+| W6-15 | Transaction Testing | All | | 🔄 IN PROGRESS | 4 test di `KasirTransaksiTest`. Belum diuji: pembatalan transaksi, kirim ganda, obat tidak ditemukan |
 
 ## Minggu 7 — Transaction ↔ Stock Integration
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W7-01 | Transaction Success Handler | Alexander | | 🗂️ BACKLOG | |
-| W7-02 | Stock Deduction | Alexander | | 🗂️ BACKLOG | Critical |
-| W7-03 | Transaction Failure Handling | Alexander | | 🗂️ BACKLOG | Critical |
-| W7-04 | Stock Consistency Check | Alexander | | 🗂️ BACKLOG | |
-| W7-05 | Multi-Item Stock Update | Alexander | | 🗂️ BACKLOG | |
-| W7-06 | Pharmacy-Specific Transaction | Alexander | | 🗂️ BACKLOG | |
-| W7-07 | Pharmacy-Specific Stock Update | Alexander | | 🗂️ BACKLOG | Critical |
-| W7-08 | Cross-Pharmacy Access Testing | All | | 🗂️ BACKLOG | Critical |
-| W7-09 | End-to-End Testing | All | | 🗂️ BACKLOG | Critical |
-| W7-10 | Core Flow Review | Alexander + All | | 🗂️ BACKLOG | |
+| W7-01 | Transaction Success Handler | Alexander | | ✅ DONE | Simpan transaksi, kosongkan keranjang, tampilkan pesan hasil |
+| W7-02 | Stock Deduction | Alexander | | ✅ DONE | Critical. Stok berkurang saat checkout. Teruji |
+| W7-03 | Transaction Failure Handling | Alexander | | ✅ DONE | Critical. Semua dibungkus satu transaksi database, stok tidak berubah bila gagal. Teruji |
+| W7-04 | Stock Consistency Check | Alexander | | ✅ DONE | Baris obat dikunci (`lockForUpdate`) dan stok diperiksa ulang sebelum disimpan |
+| W7-05 | Multi-Item Stock Update | Alexander | | 🔍 REVIEW | Sudah jalan, belum ada test khusus untuk transaksi banyak jenis obat |
+| W7-06 | Pharmacy-Specific Transaction | Alexander | | 📋 TODO | Lihat BUG-01 dan BUG-03 |
+| W7-07 | Pharmacy-Specific Stock Update | Alexander | | 📋 TODO | Critical. Stok berkurang di baris obat yang benar, tetapi kasir masih bisa menjual obat apotek lain (BUG-01) |
+| W7-08 | Cross-Pharmacy Access Testing | All | | 📋 TODO | Critical. Baru ada test pemisahan untuk data obat, belum untuk kasir dan riwayat |
+| W7-09 | End-to-End Testing | All | | 🔄 IN PROGRESS | Alur login sampai stok berkurang sudah teruji. Belum diuji utuh bersama laporan |
+| W7-10 | Core Flow Review | Alexander + All | | 📋 TODO | Tunggu BUG-01 s/d BUG-03 selesai |
 
 ## Minggu 8 — History & Reporting
 
 | ID | Task | Owner | Reviewer | Status | Catatan |
 |---|---|---|---|---|---|
-| W8-01 | Transaction History Backend | Alexander | | 🗂️ BACKLOG | |
-| W8-02 | Transaction History UI | Pieter | | 🔄 IN PROGRESS | Halaman riwayat + total harian sudah jadi, isinya masih data contoh |
-| W8-03 | Transaction Detail View | Pieter | | 🗂️ BACKLOG | |
-| W8-04 | Inventory Report | Alexander + Pieter | | 🗂️ BACKLOG | |
-| W8-05 | Transaction Report | Alexander + Pieter | | 🗂️ BACKLOG | |
-| W8-06 | Report Filter | Pieter | | 🗂️ BACKLOG | |
-| W8-07 | Report UI/UX | Roman + Samuel | | 🗂️ BACKLOG | |
-| W8-08 | Report Data Isolation | Alexander | | 🗂️ BACKLOG | |
-| W8-09 | History/Report Testing | All | | 🗂️ BACKLOG | |
+| W8-01 | Transaction History Backend | Alexander | | ✅ DONE | `PenjualanController`, 5 transaksi per halaman. Teruji |
+| W8-02 | Transaction History UI | Pieter | | ✅ DONE | Tabel riwayat + total hari ini + tampilan kartu di layar kecil |
+| W8-03 | Transaction Detail View | Pieter | | ✅ DONE | Rincian obat per transaksi + unduh PDF per transaksi. Teruji |
+| W8-04 | Inventory Report | Alexander + Pieter | | 🔄 IN PROGRESS | Halaman Monitoring Stok sudah ada (stok menipis + mendekati kadaluarsa), tetapi belum bisa diunduh sebagai laporan |
+| W8-05 | Transaction Report | Alexander + Pieter | | ✅ DONE | Laporan PDF gabungan per rentang tanggal. Teruji |
+| W8-06 | Report Filter | Pieter | | ✅ DONE | Saring berdasarkan rentang tanggal, rentang tidak wajar ditolak. Teruji |
+| W8-07 | Report UI/UX | Roman + Samuel | | 🔍 REVIEW | Tampilan PDF sudah jadi, belum ditinjau bersama |
+| W8-08 | Report Data Isolation | Alexander | | 📋 TODO | Lihat BUG-02 |
+| W8-09 | History/Report Testing | All | | ✅ DONE | 7 test di `PenjualanTest` |
 
 ## Minggu 9 — Hardening, Optional Feature & Feature Freeze
 
@@ -294,59 +307,58 @@ Penanda: ✅ PASS · ❌ FAIL · 🟡 SEBAGIAN · ⬜ BELUM DIJALANKAN
 | TC-AUTH-04 | Logout | ✅ PASS | `LoginTest::test_logout` |
 | TC-AUTH-05 | Session after logout | 🟡 SEBAGIAN | Baru cek user keluar, belum cek akses halaman setelah logout (GAP-05) |
 
-### Pharmacy Isolation — 0/6
-| ID | Skenario | Status |
-|---|---|---|
-| TC-PHARM-01 | User A melihat data A | ⬜ |
-| TC-PHARM-02 | User B melihat data B | ⬜ |
-| TC-PHARM-03 | User A mencoba URL/data B | ⬜ |
-| TC-PHARM-04 | User B mencoba URL/data A | ⬜ |
-| TC-PHARM-05 | Transaction A tidak muncul pada User B | ⬜ |
-| TC-PHARM-06 | Stock A tidak berubah akibat transaction B | ⬜ |
+### Pharmacy Isolation — 4/6 (2 GAGAL)
+| ID | Skenario | Status | Bukti |
+|---|---|---|---|
+| TC-PHARM-01 | User A melihat data A | ✅ PASS | `ObatTest::test_user_hanya_dapat_melihat_obat_dari_apoteknya` |
+| TC-PHARM-02 | User B melihat data B | ✅ PASS | test yang sama |
+| TC-PHARM-03 | User A mencoba URL/data B | ✅ PASS | membuka obat milik apotek lain menghasilkan 404 |
+| TC-PHARM-04 | User B mencoba URL/data A | ✅ PASS | sama |
+| TC-PHARM-05 | Transaction A tidak muncul pada User B | ❌ GAGAL | Riwayat belum disaring per apotek (BUG-02) |
+| TC-PHARM-06 | Stock A tidak berubah akibat transaction B | ❌ GAGAL | Kasir bisa menjual obat apotek lain (BUG-01) |
 
 ### Inventory — 3/5
 | ID | Skenario | Status | Bukti |
 |---|---|---|---|
 | TC-INV-01 | Add item | ✅ PASS | `ObatTest::test_admin_dapat_menjalankan_crud_obat` |
-| TC-INV-02 | Edit item | ✅ PASS | `ObatTest::test_admin_dapat_menjalankan_crud_obat` |
-| TC-INV-03 | Delete item | ✅ PASS | `ObatTest::test_admin_dapat_menjalankan_crud_obat` |
-| TC-INV-04 | Search item | 🟡 SEBAGIAN | Fitur jalan di `ObatController@index`, belum ada test (W5-10) |
-| TC-INV-05 | Invalid input | 🟡 SEBAGIAN | Baru kode obat duplikat yang diuji, validasi lain belum (W5-12) |
+| TC-INV-02 | Edit item | ✅ PASS | test yang sama |
+| TC-INV-03 | Delete item | ✅ PASS | test yang sama |
+| TC-INV-04 | Search item | 🟡 SEBAGIAN | penyaringan kategori & satuan teruji, pencarian teks belum (W5-10) |
+| TC-INV-05 | Invalid input | 🟡 SEBAGIAN | baru kode obat duplikat yang diuji |
 
 > Di luar daftar Implementation Plan, sudah ada juga test untuk CRUD kategori
 > (`KategoriTest`) dan untuk menu sidebar sesuai hak akses (`SidebarTest`).
 
-### Cashier — 0/9
-| ID | Skenario | Status |
-|---|---|---|
-| TC-SAL-01 | One item | ⬜ |
-| TC-SAL-02 | Multiple items | ⬜ |
-| TC-SAL-03 | Quantity > 1 | ⬜ |
-| TC-SAL-04 | Quantity > stock | ⬜ |
-| TC-SAL-05 | Invalid quantity | ⬜ |
-| TC-SAL-06 | Item unavailable | ⬜ |
-| TC-SAL-07 | Cancel transaction | ⬜ |
-| TC-SAL-08 | Successful checkout | ⬜ |
-| TC-SAL-09 | Duplicate submit | ⬜ |
+### Cashier — 4/9
+| ID | Skenario | Status | Bukti |
+|---|---|---|---|
+| TC-SAL-01 | One item | ✅ PASS | `KasirTransaksiTest` |
+| TC-SAL-02 | Multiple items | ⬜ | belum diuji |
+| TC-SAL-03 | Quantity > 1 | ✅ PASS | checkout 2 item |
+| TC-SAL-04 | Quantity > stock | ✅ PASS | penambahan ditolak, stok tidak berubah |
+| TC-SAL-05 | Invalid quantity | ⬜ | belum diuji |
+| TC-SAL-06 | Item unavailable | ⬜ | belum diuji |
+| TC-SAL-07 | Cancel transaction | ⬜ | fitur batal transaksi belum ada |
+| TC-SAL-08 | Successful checkout | ✅ PASS | transaksi tersimpan |
+| TC-SAL-09 | Duplicate submit | ⬜ | belum diuji |
 
-### Stock — 0/5
-| ID | Skenario | Status |
-|---|---|---|
-| TC-STK-01 | Stock decreases after success | ⬜ |
-| TC-STK-02 | Stock unchanged after failed transaction | ⬜ |
-| TC-STK-03 | Stock cannot become negative | ⬜ |
-| TC-STK-04 | Multi-item stock update | ⬜ |
-| TC-STK-05 | Pharmacy-specific stock update | ⬜ |
+### Stock — 3/5 (1 GAGAL)
+| ID | Skenario | Status | Bukti |
+|---|---|---|---|
+| TC-STK-01 | Stock decreases after success | ✅ PASS | `KasirTransaksiTest` |
+| TC-STK-02 | Stock unchanged after failed transaction | ✅ PASS | `KasirTransaksiTest` |
+| TC-STK-03 | Stock cannot become negative | ✅ PASS | penambahan melebihi stok ditolak |
+| TC-STK-04 | Multi-item stock update | ⬜ | belum diuji |
+| TC-STK-05 | Pharmacy-specific stock update | ❌ GAGAL | BUG-01 |
 
-### Report — 0/5
-| ID | Skenario | Status |
-|---|---|---|
-| TC-REP-01 | Transaction history | ⬜ |
-| TC-REP-02 | Transaction detail | ⬜ |
-| TC-REP-03 | Inventory report | ⬜ |
-| TC-REP-04 | Transaction report | ⬜ |
-| TC-REP-05 | Pharmacy-specific report | ⬜ |
-
+### Report — 3/5 (1 GAGAL)
+| ID | Skenario | Status | Bukti |
+|---|---|---|---|
+| TC-REP-01 | Transaction history | ✅ PASS | `PenjualanTest` |
+| TC-REP-02 | Transaction detail | ✅ PASS | rincian + PDF per transaksi |
+| TC-REP-03 | Inventory report | 🟡 SEBAGIAN | halaman Monitoring Stok ada, belum bisa diunduh (W8-04) |
+| TC-REP-04 | Transaction report | ✅ PASS | PDF rentang tanggal |
+| TC-REP-05 | Pharmacy-specific report | ❌ GAGAL | BUG-02 |
 ---
 
 ## Milestone Gate
@@ -357,7 +369,7 @@ Penanda: ✅ PASS · ❌ FAIL · 🟡 SEBAGIAN · ⬜ BELUM DIJALANKAN
 | G2 | End W2 | Requirement + scope baseline | ⬜ |
 | G3 | End W3 | UML + ERD + UI/UX siap | ⬜ |
 | G4 | End W4 | Development environment siap | ✅ TERPENUHI |
-| G5 | End W7 | Core transaction-stock flow stabil | ⬜ |
+| G5 | End W7 | Core transaction-stock flow stabil | 🟡 HAMPIR — alur jual sampai stok berkurang sudah jalan dan teruji, tetapi tertahan BUG-01 s/d BUG-03 |
 | G6 | End W9 | Feature freeze | ⬜ |
 | G7 | End W10 | System testing selesai | ⬜ |
 | G8 | End W11 | Release candidate + UAT feedback | ⬜ |

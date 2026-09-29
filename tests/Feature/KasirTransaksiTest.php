@@ -103,6 +103,22 @@ class KasirTransaksiTest extends TestCase
         }
     }
 
+    public function test_tombol_bayar_meminta_konfirmasi_lebih_dulu(): void
+    {
+        $kasir = $this->kasir();
+        $obat = $this->obat();
+
+        foreach (['kasir.transaksi', 'kasir.keranjang'] as $halaman) {
+            $this->actingAs($kasir)
+                ->withSession(['kasir.cart' => [$obat->id => 2]])
+                ->get(route($halaman))
+                ->assertOk()
+                ->assertSee('data-konfirmasi-bayar', false)
+                ->assertSee('data-total="Rp 13.000"', false)
+                ->assertSee('data-jumlah-item="2"', false);
+        }
+    }
+
     public function test_notifikasi_pembayaran_berhasil_dikirim_ke_halaman(): void
     {
         $kasir = $this->kasir();

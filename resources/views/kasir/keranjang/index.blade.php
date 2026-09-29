@@ -102,7 +102,10 @@
                     <p class="mt-1 text-2xl font-bold text-slate-900">Rp {{ number_format($subtotal / 100, 0, ',', '.') }}</p>
                 </div>
 
-                <form method="POST" action="{{ route('kasir.checkout') }}">
+                <form method="POST" action="{{ route('kasir.checkout') }}"
+                    data-konfirmasi-bayar
+                    data-total="Rp {{ number_format($subtotal / 100, 0, ',', '.') }}"
+                    data-jumlah-item="{{ $jumlahItem }}">
                     @csrf
                     @include('kasir.partials.metode-pembayaran')
 

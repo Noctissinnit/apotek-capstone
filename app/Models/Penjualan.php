@@ -16,8 +16,11 @@ class Penjualan extends Model
     protected $fillable = [
         'no_faktur',
         'user_id',
+        'nama_pelanggan',
         'tanggal_penjualan',
         'total',
+        'metode_pembayaran',
+        'keterangan',
     ];
 
     protected function casts(): array

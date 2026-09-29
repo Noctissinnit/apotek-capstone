@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirTransaksiController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,7 +45,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/keranjang', [KasirTransaksiController::class, 'add'])->name('keranjang.add');
         Route::delete('/keranjang/{obat}', [KasirTransaksiController::class, 'remove'])->name('keranjang.remove');
         Route::post('/checkout', [KasirTransaksiController::class, 'checkout'])->name('checkout');
-        Route::get('/riwayat', [DashboardController::class, 'riwayat'])->name('riwayat');
+
+        Route::get('/riwayat', [PenjualanController::class, 'index'])->name('riwayat');
+        Route::get('/riwayat/laporan/pdf', [PenjualanController::class, 'exportRentangPdf'])->name('riwayat.pdf-rentang');
+        Route::get('/riwayat/{penjualan}/pdf', [PenjualanController::class, 'exportPdf'])->name('riwayat.pdf');
         Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring');
     });
 });

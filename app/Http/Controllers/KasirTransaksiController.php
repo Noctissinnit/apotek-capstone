@@ -18,6 +18,7 @@ class KasirTransaksiController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $cart = $this->currentCart();
+        $items = $this->cartItems();
 
         return view('kasir.transaksi.index', [
             'obat' => Obat::query()
@@ -29,6 +30,8 @@ class KasirTransaksiController extends Controller
             'search' => $search,
             'jumlahKeranjang' => array_sum($cart),
             'jumlahPerObat' => $cart,
+            'items' => $items,
+            'subtotal' => $items->sum(fn (array $item) => $item['subtotal_cents']),
         ]);
     }
 

@@ -9,11 +9,19 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
 
 class KasirTransaksiController extends Controller
 {
+    /**
+     * Cara pembayaran yang dilayani di meja kasir. Semuanya dibayar langsung di tempat:
+     * QRIS lewat stiker QR milik apotek, kartu debit lewat mesin EDC bank.
+     * Sistem hanya mencatat, tidak memproses pembayaran.
+     */
+    public const METODE_PEMBAYARAN = ['Tunai', 'QRIS', 'Kartu Debit'];
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('q', ''));
@@ -84,7 +92,11 @@ class KasirTransaksiController extends Controller
             return redirect()->route('kasir.keranjang')->with('error', 'Keranjang masih kosong.');
         }
 
-        $penjualan = DB::transaction(function () use ($cart, $request): Penjualan {
+        $data = $request->validate([
+            'metode_pembayaran' => ['required', Rule::in(self::METODE_PEMBAYARAN)],
+        ]);
+
+        $penjualan = DB::transaction(function () use ($cart, $request, $data): Penjualan {
             $obatList = Obat::query()
                 ->whereIn('id', array_keys($cart))
                 ->orderBy('id')
@@ -109,6 +121,7 @@ class KasirTransaksiController extends Controller
                 'user_id' => $request->user()->id,
                 'tanggal_penjualan' => now(),
                 'total' => $this->fromCents($totalCents),
+                'metode_pembayaran' => $data['metode_pembayaran'],
             ]);
 
             foreach ($cart as $obatId => $jumlah) {
@@ -132,7 +145,7 @@ class KasirTransaksiController extends Controller
         $request->session()->forget('kasir.cart');
 
         return redirect()->route('kasir.keranjang')
-            ->with('success', "Transaksi {$penjualan->no_faktur} berhasil. Total Rp ".number_format((float) $penjualan->total, 0, ',', '.'));
+            ->with('success', "Transaksi {$penjualan->no_faktur} berhasil. Total Rp ".number_format((float) $penjualan->total, 0, ',', '.')." ({$penjualan->metode_pembayaran}).");
     }
 
     /** @return array<int, int> */

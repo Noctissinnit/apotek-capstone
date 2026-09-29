@@ -41,6 +41,7 @@
                         <th scope="col" class="table-th">No Faktur</th>
                         <th scope="col" class="table-th">Tanggal &amp; Waktu</th>
                         <th scope="col" class="table-th">Kasir</th>
+                        <th scope="col" class="table-th">Bayar</th>
                         <th scope="col" class="table-th text-right">Item</th>
                         <th scope="col" class="table-th text-right">Total</th>
                         <th scope="col" class="table-th text-right">Laporan</th>
@@ -52,6 +53,11 @@
                             <th scope="row" class="table-td font-medium text-slate-900">{{ $item->no_faktur }}</th>
                             <td class="table-td">{{ $item->tanggal_penjualan->format('d/m/Y H:i') }}</td>
                             <td class="table-td">{{ $item->user->name }}</td>
+                            <td class="table-td">
+                                <span class="{{ match ($item->metode_pembayaran) { 'QRIS' => 'badge-success', 'Kartu Debit' => 'badge-neutral', default => 'badge-warning' } }}">
+                                    {{ $item->metode_pembayaran }}
+                                </span>
+                            </td>
                             <td class="table-td text-right">{{ $item->detail->sum('jumlah') }}</td>
                             <td class="table-td text-right font-semibold text-slate-900">Rp {{ number_format($item->total, 0, ',', '.') }}</td>
                             <td class="table-td text-right">
@@ -62,14 +68,14 @@
                             </td>
                         </tr>
                         <tr class="bg-slate-50">
-                            <td colspan="6" class="px-5 py-3 text-xs text-slate-600">
+                            <td colspan="7" class="px-5 py-3 text-xs text-slate-600">
                                 <span class="font-semibold text-slate-700">Rincian:</span>
                                 {{ $item->detail->map(fn ($detail) => $detail->obat->nama_obat.' ('.$detail->jumlah.' '.$detail->obat->satuan.')')->join(', ') }}
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <div class="empty-state">
                                     <svg class="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     <p>Belum ada transaksi.</p>
@@ -88,7 +94,7 @@
                         <div class="min-w-0">
                             <p class="truncate font-medium text-slate-900">{{ $item->no_faktur }}</p>
                             <p class="mt-0.5 text-xs text-slate-500">
-                                {{ $item->tanggal_penjualan->format('d/m/Y H:i') }} &middot; {{ $item->user->name }} &middot; {{ $item->detail->sum('jumlah') }} item
+                                {{ $item->tanggal_penjualan->format('d/m/Y H:i') }} &middot; {{ $item->user->name }} &middot; {{ $item->detail->sum('jumlah') }} item &middot; {{ $item->metode_pembayaran }}
                             </p>
                             <p class="mt-1 text-xs text-slate-500">{{ $item->detail->map(fn ($detail) => $detail->obat->nama_obat.' ('.$detail->jumlah.')')->join(', ') }}</p>
                         </div>

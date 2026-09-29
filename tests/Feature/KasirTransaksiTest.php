@@ -46,12 +46,14 @@ class KasirTransaksiTest extends TestCase
             ->post(route('kasir.keranjang.add'), ['obat_id' => $obat->id, 'jumlah' => 2])
             ->assertSessionHasNoErrors();
 
-        $this->post(route('kasir.checkout'))->assertRedirect(route('kasir.keranjang'));
+        $this->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai'])
+            ->assertRedirect(route('kasir.keranjang'));
 
         $this->assertSame(3, $obat->fresh()->stok);
         $this->assertDatabaseHas('penjualan', [
             'user_id' => $kasir->id,
             'total' => '13000.00',
+            'metode_pembayaran' => 'Tunai',
         ]);
         $this->assertDatabaseHas('detail_penjualan', [
             'obat_id' => $obat->id,
@@ -69,11 +71,50 @@ class KasirTransaksiTest extends TestCase
 
         $this->actingAs($kasir)
             ->withSession(['kasir.cart' => [$obat->id => 2]])
-            ->post(route('kasir.checkout'))
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai'])
             ->assertSessionHasErrors('keranjang');
 
         $this->assertSame(1, $obat->fresh()->stok);
         $this->assertSame(0, Penjualan::count());
+    }
+
+    public function test_kasir_dapat_memilih_qris_atau_kartu_debit(): void
+    {
+        foreach (['QRIS', 'Kartu Debit'] as $metode) {
+            $kasir = $this->kasir();
+            $obat = Obat::create([
+                'kode_obat' => 'OBT-'.str($metode)->slug(),
+                'nama_obat' => 'Obat '.$metode,
+                'satuan' => 'Strip',
+                'harga_jual' => 6500,
+                'stok' => 5,
+                'stok_minimum' => 1,
+            ]);
+
+            $this->actingAs($kasir)
+                ->withSession(['kasir.cart' => [$obat->id => 1]])
+                ->post(route('kasir.checkout'), ['metode_pembayaran' => $metode])
+                ->assertSessionHasNoErrors();
+
+            $this->assertDatabaseHas('penjualan', [
+                'user_id' => $kasir->id,
+                'metode_pembayaran' => $metode,
+            ]);
+        }
+    }
+
+    public function test_cara_pembayaran_di_luar_daftar_ditolak(): void
+    {
+        $kasir = $this->kasir();
+        $obat = $this->obat();
+
+        $this->actingAs($kasir)
+            ->withSession(['kasir.cart' => [$obat->id => 1]])
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Bitcoin'])
+            ->assertSessionHasErrors('metode_pembayaran');
+
+        $this->assertSame(0, Penjualan::count());
+        $this->assertSame(5, $obat->fresh()->stok);
     }
 
     public function test_keranjang_bisa_dibuka_dan_item_ditambahkan(): void

@@ -18,16 +18,19 @@ class PenjualanSeeder extends Seeder
             [
                 'tanggal' => CarbonImmutable::today()->setTime(8, 45),
                 'nomor' => 1,
+                'metode' => 'Tunai',
                 'items' => [['OBT001', 2], ['OBT005', 1]],
             ],
             [
                 'tanggal' => CarbonImmutable::today()->setTime(10, 20),
                 'nomor' => 2,
+                'metode' => 'QRIS',
                 'items' => [['OBT003', 1], ['OBT008', 1]],
             ],
             [
                 'tanggal' => CarbonImmutable::yesterday()->setTime(9, 15),
                 'nomor' => 1,
+                'metode' => 'Kartu Debit',
                 'items' => [['OBT002', 2], ['OBT004', 1]],
             ],
         ];
@@ -41,6 +44,7 @@ class PenjualanSeeder extends Seeder
                         'user_id' => $kasir->id,
                         'tanggal_penjualan' => $tanggal,
                         'total' => 0,
+                        'metode_pembayaran' => $data['metode'],
                     ]
                 );
                 $penjualan->detail()->delete();

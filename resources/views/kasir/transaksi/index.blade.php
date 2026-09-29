@@ -126,9 +126,11 @@
                         </div>
                     </dl>
 
-                    <form method="POST" action="{{ route('kasir.checkout') }}" class="mt-5">
+                    <form method="POST" action="{{ route('kasir.checkout') }}">
                         @csrf
-                        <button type="submit" class="btn-primary w-full py-2.5">
+                        @include('kasir.partials.metode-pembayaran')
+
+                        <button type="submit" class="btn-primary mt-5 w-full py-2.5">
                             Proses Pembayaran
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
                         </button>

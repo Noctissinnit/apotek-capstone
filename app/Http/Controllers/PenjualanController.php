@@ -11,17 +11,19 @@ use Illuminate\View\View;
 
 class PenjualanController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $hariIni = CarbonImmutable::today();
+        $milikApotek = fn () => Penjualan::query()->forUser($request->user());
 
         return view('kasir.riwayat.index', [
-            'riwayat' => Penjualan::with(['user', 'detail.obat'])
+            'riwayat' => $milikApotek()
+                ->with(['user', 'detail.obat'])
                 ->orderByDesc('tanggal_penjualan')
                 ->paginate(5)
                 ->withQueryString(),
-            'totalHariIni' => Penjualan::whereDate('tanggal_penjualan', $hariIni->toDateString())->sum('total'),
-            'jumlahHariIni' => Penjualan::whereDate('tanggal_penjualan', $hariIni->toDateString())->count(),
+            'totalHariIni' => $milikApotek()->whereDate('tanggal_penjualan', $hariIni->toDateString())->sum('total'),
+            'jumlahHariIni' => $milikApotek()->whereDate('tanggal_penjualan', $hariIni->toDateString())->count(),
             'tanggalAwalLaporan' => $hariIni->toDateString(),
             'tanggalAkhirLaporan' => $hariIni->toDateString(),
         ]);
@@ -35,7 +37,9 @@ class PenjualanController extends Controller
         ]);
         $tanggalMulai = CarbonImmutable::createFromFormat('Y-m-d', $validated['tanggal_mulai']);
         $tanggalSelesai = CarbonImmutable::createFromFormat('Y-m-d', $validated['tanggal_selesai']);
-        $penjualan = Penjualan::with(['user', 'detail.obat'])
+        $penjualan = Penjualan::query()
+            ->forUser($request->user())
+            ->with(['user', 'detail.obat'])
             ->whereBetween('tanggal_penjualan', [$tanggalMulai->startOfDay(), $tanggalSelesai->endOfDay()])
             ->orderBy('tanggal_penjualan')
             ->get();
@@ -56,8 +60,11 @@ class PenjualanController extends Controller
         ]);
     }
 
-    public function exportPdf(Penjualan $penjualan): Response
+    public function exportPdf(Request $request, Penjualan $penjualan): Response
     {
+        // Struk transaksi apotek lain tidak boleh dibuka lewat URL
+        abort_unless($penjualan->apotek === $request->user()->apotek, 404);
+
         $penjualan->load(['user', 'detail.obat']);
 
         $dompdf = new Dompdf;

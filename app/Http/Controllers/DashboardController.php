@@ -43,7 +43,12 @@ class DashboardController extends Controller
             'totalObat' => (clone $obat)->count(),
             'obatMenipis' => (clone $obat)->stokMenipis()->orderBy('stok')->get(),
             'obatHampirKadaluarsa' => $this->obatHampirKadaluarsa(clone $obat),
-            'riwayatTerakhir' => Penjualan::with('detail.obat')->latest('tanggal_penjualan')->take(3)->get(),
+            'riwayatTerakhir' => Penjualan::query()
+                ->forUser($request->user())
+                ->with('detail.obat')
+                ->latest('tanggal_penjualan')
+                ->take(3)
+                ->get(),
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DetailPenjualan;
 use App\Models\Obat;
 use App\Models\Penjualan;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,10 +27,11 @@ class KasirTransaksiController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $cart = $this->currentCart();
-        $items = $this->cartItems();
+        $items = $this->cartItems($request->user());
 
         return view('kasir.transaksi.index', [
             'obat' => Obat::query()
+                ->forUser($request->user())
                 ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
                     ->where('nama_obat', 'like', "%{$search}%")
                     ->orWhere('kode_obat', 'like', "%{$search}%")))
@@ -43,9 +45,9 @@ class KasirTransaksiController extends Controller
         ]);
     }
 
-    public function cart(): View
+    public function cart(Request $request): View
     {
-        $items = $this->cartItems();
+        $items = $this->cartItems($request->user());
 
         return view('kasir.keranjang.index', [
             'items' => $items,
@@ -61,7 +63,8 @@ class KasirTransaksiController extends Controller
             'jumlah' => ['nullable', 'integer', 'min:1', 'max:9999'],
         ]);
 
-        $obat = Obat::findOrFail($data['obat_id']);
+        // Obat milik apotek lain tidak boleh masuk keranjang
+        $obat = Obat::query()->forUser($request->user())->findOrFail($data['obat_id']);
         $cart = $this->currentCart();
         $quantity = ($cart[$obat->id] ?? 0) + ($data['jumlah'] ?? 1);
 
@@ -97,7 +100,10 @@ class KasirTransaksiController extends Controller
         ]);
 
         $penjualan = DB::transaction(function () use ($cart, $request, $data): Penjualan {
+            // Penyaringan apotek diulang di sini, bukan hanya saat menampilkan daftar,
+            // supaya keranjang yang sudah telanjur berisi obat apotek lain tetap ditolak
             $obatList = Obat::query()
+                ->forUser($request->user())
                 ->whereIn('id', array_keys($cart))
                 ->orderBy('id')
                 ->lockForUpdate()
@@ -107,7 +113,13 @@ class KasirTransaksiController extends Controller
             $totalCents = 0;
             foreach ($cart as $obatId => $jumlah) {
                 $obat = $obatList->get($obatId);
-                if (! $obat || $obat->stok < $jumlah) {
+                if (! $obat) {
+                    throw ValidationException::withMessages([
+                        'keranjang' => 'Ada obat di keranjang yang bukan milik apotek Anda. Kosongkan keranjang lalu ulangi.',
+                    ]);
+                }
+
+                if ($obat->stok < $jumlah) {
                     throw ValidationException::withMessages([
                         'keranjang' => 'Stok salah satu obat berubah atau tidak mencukupi. Periksa kembali keranjang.',
                     ]);
@@ -119,6 +131,7 @@ class KasirTransaksiController extends Controller
             $penjualan = Penjualan::create([
                 'no_faktur' => 'TRX-'.now()->format('Ymd-His').'-'.Str::upper(Str::random(5)),
                 'user_id' => $request->user()->id,
+                'apotek' => $request->user()->apotek,
                 'tanggal_penjualan' => now(),
                 'total' => $this->fromCents($totalCents),
                 'metode_pembayaran' => $data['metode_pembayaran'],
@@ -164,10 +177,14 @@ class KasirTransaksiController extends Controller
     }
 
     /** @return \Illuminate\Support\Collection<int, array<string, mixed>> */
-    private function cartItems()
+    private function cartItems(User $user)
     {
         $cart = $this->currentCart();
-        $obatList = Obat::whereIn('id', array_keys($cart))->get()->keyBy('id');
+        $obatList = Obat::query()
+            ->forUser($user)
+            ->whereIn('id', array_keys($cart))
+            ->get()
+            ->keyBy('id');
 
         return collect($cart)->map(function (int $quantity, int $id) use ($obatList): array {
             $obat = $obatList->get($id);

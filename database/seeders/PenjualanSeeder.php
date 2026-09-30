@@ -42,6 +42,7 @@ class PenjualanSeeder extends Seeder
                     ['no_faktur' => 'TRX-'.$tanggal->format('Ymd').'-'.str_pad((string) $data['nomor'], 3, '0', STR_PAD_LEFT)],
                     [
                         'user_id' => $kasir->id,
+                        'apotek' => $kasir->apotek,
                         'tanggal_penjualan' => $tanggal,
                         'total' => 0,
                         'metode_pembayaran' => $data['metode'],

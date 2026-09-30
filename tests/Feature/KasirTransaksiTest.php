@@ -29,6 +29,7 @@ class KasirTransaksiTest extends TestCase
         return Obat::create([
             'kode_obat' => 'OBT-TEST',
             'nama_obat' => 'Obat Uji',
+            'apotek' => 'Apotek A',
             'satuan' => 'Strip',
             'harga_beli' => 4000,
             'harga_jual' => 6500,
@@ -85,6 +86,7 @@ class KasirTransaksiTest extends TestCase
             $obat = Obat::create([
                 'kode_obat' => 'OBT-'.str($metode)->slug(),
                 'nama_obat' => 'Obat '.$metode,
+                'apotek' => 'Apotek A',
                 'satuan' => 'Strip',
                 'harga_jual' => 6500,
                 'stok' => 5,

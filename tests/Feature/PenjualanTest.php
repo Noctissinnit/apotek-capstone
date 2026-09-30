@@ -130,6 +130,7 @@ class PenjualanTest extends TestCase
             Penjualan::create([
                 'no_faktur' => 'TRX-TAMBAHAN-'.str_pad((string) $nomor, 3, '0', STR_PAD_LEFT),
                 'user_id' => $kasir->id,
+                'apotek' => $kasir->apotek,
                 'tanggal_penjualan' => CarbonImmutable::today()->setTime(12 + $nomor, 0),
                 'total' => 1000 * $nomor,
             ]);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ class Penjualan extends Model
     protected $fillable = [
         'no_faktur',
         'user_id',
+        'apotek',
         'nama_pelanggan',
         'tanggal_penjualan',
         'total',
@@ -39,5 +41,16 @@ class Penjualan extends Model
     public function detail(): HasMany
     {
         return $this->hasMany(DetailPenjualan::class);
+    }
+
+    /**
+     * Batasi transaksi hanya milik apotek user yang sedang login.
+     *
+     * @param  Builder<Penjualan>  $query
+     * @return Builder<Penjualan>
+     */
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        return $query->where($query->getModel()->getTable().'.apotek', $user->apotek);
     }
 }

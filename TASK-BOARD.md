@@ -9,13 +9,13 @@
 
 | Bagian | Task | Progress |
 |---|---:|---|
-| **Keseluruhan** | 139 | `████████░░░░░░░░░░░░` **40%** |
+| **Keseluruhan** | 140 | `████████░░░░░░░░░░░░` **40%** |
 | W1 — Requirement Validation | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W2 — Requirement Baseline | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W3 — Analysis & Design | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W4 — Technical Foundation | 11 | `███████████████░░░░░` 77% |
 | W5 — Auth, Pharmacy & Inventory | 12 | `███████████████████░` 94% |
-| GAP — Temuan Gap Analysis | 6 | `███████░░░░░░░░░░░░░` 33% |
+| GAP — Temuan Gap Analysis | 7 | `██████░░░░░░░░░░░░░░` 29% |
 | EX — Fitur Tambahan | 3 | `████████████████████` 100% |
 | BUG — Bug (semua sudah ditutup) | 3 | `████████████████████` 100% |
 | W6 — Cashier & Transaction | 15 | `████████████████░░░░` 80% |
@@ -26,7 +26,7 @@
 | W11 — UAT & Deployment | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W12 — Final Release | 14 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 
-**Jumlah per status:** ✅ DONE 49 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 7 · 📋 TODO 34 · 🗂️ BACKLOG 44
+**Jumlah per status:** ✅ DONE 49 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 7 · 📋 TODO 35 · 🗂️ BACKLOG 44
 
 **Test scenario:** 25 / 35 PASS · 4 sebagian · 0 gagal · 6 belum dijalankan
 
@@ -159,6 +159,7 @@ Task yang muncul dari pengecekan kode terhadap Implementation Plan.
 | GAP-04 | Sesuaikan seeder dengan data 2 apotek | Samuel | GAP-01 | ✅ DONE | 4 akun (admin & kasir tiap apotek), 12 obat dibagi 6-6. Nama apotek masih "Apotek A"/"Apotek B", belum nama asli mitra |
 | GAP-05 | Lengkapi test TC-AUTH-05 (halaman terlindungi tidak bisa dibuka setelah logout) | Alexander | — | 📋 TODO | |
 | GAP-06 | Hapus atau perbaiki `resources/views/kasir/obat/index.blade.php` | Pieter | — | 📋 TODO | View rusak: memanggil route `kasir.obat.index` yang tidak ada, dan tidak dipakai controller mana pun |
+| GAP-07 | Bersihkan baris `Co-Authored-By: Claude` dari 9 commit lama | Alexander | W9-08 | 📋 TODO | Sudah terlanjur ada di GitHub pada `main`, `development`, dan 6 branch fitur. Perlu tulis ulang sejarah + force-push, jadi **dikerjakan setelah semua branch digabung dan tidak ada yang sedang bekerja**. Buat tag cadangan dulu, lalu seluruh anggota re-clone. Commit baru sudah tidak ditandai lagi |
 
 ## Bug (Riwayat Perbaikan)
 

@@ -2,6 +2,21 @@ import './bootstrap';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
+// Pratinjau gambar sebelum diunggah
+document.addEventListener('change', (event) => {
+    const input = event.target.closest('input[type="file"][data-pratinjau]');
+    if (!input) return;
+
+    const pratinjau = document.getElementById(input.dataset.pratinjau);
+    const kosong = document.getElementById('gambar-kosong');
+    const berkas = input.files?.[0];
+    if (!pratinjau || !berkas) return;
+
+    pratinjau.src = URL.createObjectURL(berkas);
+    pratinjau.classList.remove('hidden');
+    kosong?.classList.add('hidden');
+});
+
 // Konfirmasi sebelum pembayaran diproses, supaya kasir tidak salah tekan
 document.addEventListener('submit', (event) => {
     const form = event.target.closest('[data-konfirmasi-bayar]');

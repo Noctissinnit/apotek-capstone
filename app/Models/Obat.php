@@ -19,6 +19,7 @@ class Obat extends Model
     protected $fillable = [
         'kode_obat',
         'nama_obat',
+        'gambar',
         'apotek',
         'kategori_id',
         'satuan',
@@ -29,6 +30,14 @@ class Obat extends Model
         'tanggal_kadaluarsa',
         'keterangan',
     ];
+
+    /**
+     * Alamat gambar obat untuk ditampilkan di halaman, null bila belum ada gambar.
+     */
+    public function urlGambar(): ?string
+    {
+        return $this->gambar ? asset('uploads/'.$this->gambar) : null;
+    }
 
     protected function casts(): array
     {

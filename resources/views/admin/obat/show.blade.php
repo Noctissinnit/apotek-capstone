@@ -7,6 +7,12 @@
 @endsection
 @section('content')
 <div class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2 sm:p-6">
+    @if ($obat->urlGambar())
+        <div class="sm:col-span-2">
+            <img src="{{ $obat->urlGambar() }}" alt="Gambar {{ $obat->nama_obat }}" class="h-48 w-48 rounded-xl border border-slate-200 object-cover">
+        </div>
+    @endif
+
     @foreach ([['Kode Obat', $obat->kode_obat], ['Apotek', $obat->apotek ?: '-'], ['Kategori', $obat->kategoriRelasi?->nama_kategori ?: ($obat->kategori ?: '-')], ['Satuan', $obat->satuan], ['Harga Beli', 'Rp '.number_format($obat->harga_beli, 0, ',', '.')], ['Harga Jual', 'Rp '.number_format($obat->harga_jual, 0, ',', '.')], ['Stok', $obat->stok.' '.$obat->satuan], ['Stok Minimum', $obat->stok_minimum.' '.$obat->satuan], ['Kadaluarsa', $obat->tanggal_kadaluarsa?->translatedFormat('d M Y') ?: '-']] as [$label, $value])
     <div>
         <dt class="text-sm text-slate-500">{{ $label }}</dt>

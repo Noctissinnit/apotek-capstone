@@ -6,6 +6,7 @@ use App\Models\Obat;
 use App\Models\Kategori;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ObatController extends Controller
@@ -64,7 +65,10 @@ class ObatController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Obat::create($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $data['gambar'] = $this->simpanGambar($request);
+
+        Obat::create($data);
 
         return to_route('obat.index')->with('success', 'Data obat berhasil ditambahkan.');
     }
@@ -86,7 +90,24 @@ class ObatController extends Controller
     public function update(Request $request, Obat $obat): RedirectResponse
     {
         $this->ensureSameApotek($obat);
-        $obat->update($this->validatedData($request, $obat));
+
+        $data = $this->validatedData($request, $obat);
+        $gambarLama = $obat->gambar;
+
+        if ($request->boolean('hapus_gambar')) {
+            $data['gambar'] = null;
+        }
+
+        if ($gambarBaru = $this->simpanGambar($request)) {
+            $data['gambar'] = $gambarBaru;
+        }
+
+        $obat->update($data);
+
+        // Berkas lama dibuang hanya setelah data tersimpan, agar tidak hilang bila gagal
+        if ($gambarLama && $gambarLama !== $obat->gambar) {
+            Storage::disk('unggahan')->delete($gambarLama);
+        }
 
         return to_route('obat.index')->with('success', 'Data obat berhasil diperbarui.');
     }
@@ -97,6 +118,18 @@ class ObatController extends Controller
         $obat->delete();
 
         return to_route('obat.index')->with('success', 'Data obat berhasil dihapus.');
+    }
+
+    /**
+     * Simpan gambar yang diunggah, kembalikan nama berkasnya. Null bila tidak ada unggahan.
+     */
+    private function simpanGambar(Request $request): ?string
+    {
+        if (! $request->hasFile('gambar')) {
+            return null;
+        }
+
+        return Storage::disk('unggahan')->putFile('obat', $request->file('gambar'));
     }
 
     private function validatedData(Request $request, ?Obat $obat = null): array
@@ -112,7 +145,12 @@ class ObatController extends Controller
             'stok_minimum' => ['required', 'integer', 'min:0'],
             'tanggal_kadaluarsa' => ['nullable', 'date'],
             'keterangan' => ['nullable', 'string'],
+            // maksimal 2 MB, cukup untuk foto kemasan obat
+            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        // gambar diurus terpisah lewat simpanGambar()
+        unset($data['gambar']);
 
         $data['apotek'] = $request->user()->apotek;
 

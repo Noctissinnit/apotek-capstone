@@ -38,6 +38,19 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Berkas unggahan (mis. gambar obat) disimpan langsung di folder public,
+         * bukan di storage/app/public. Alasannya: hosting tim tidak bisa
+         * menjalankan "php artisan storage:link" yang butuh akses terminal.
+         */
+        'unggahan' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'url' => env('APP_URL').'/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

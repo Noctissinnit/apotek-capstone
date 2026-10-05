@@ -57,6 +57,9 @@
                                 <span class="{{ match ($item->metode_pembayaran) { 'QRIS' => 'badge-success', 'Transfer/Debit' => 'badge-neutral', default => 'badge-warning' } }}">
                                     {{ $item->metode_pembayaran }}
                                 </span>
+                                @if ($item->no_referensi)
+                                    <span class="mt-0.5 block text-xs text-slate-500" title="Nomor referensi pembayaran">{{ $item->no_referensi }}</span>
+                                @endif
                             </td>
                             <td class="table-td text-right">{{ $item->detail->sum('jumlah') }}</td>
                             <td class="table-td text-right font-semibold text-slate-900">Rp {{ number_format($item->total, 0, ',', '.') }}</td>

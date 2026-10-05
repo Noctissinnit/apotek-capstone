@@ -24,6 +24,7 @@ class Penjualan extends Model
         'uang_diterima',
         'kembalian',
         'metode_pembayaran',
+        'no_referensi',
         'keterangan',
     ];
 

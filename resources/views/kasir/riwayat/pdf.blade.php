@@ -49,6 +49,12 @@
                 <th colspan="4" class="right">Total transaksi</th>
                 <th class="right">Rp {{ number_format($transaksi->total, 0, ',', '.') }}</th>
             </tr>
+            @if ($transaksi->no_referensi)
+                <tr>
+                    <td colspan="4" class="right">Bayar: {{ $transaksi->metode_pembayaran }} &mdash; Ref</td>
+                    <td class="right">{{ $transaksi->no_referensi }}</td>
+                </tr>
+            @endif
             @if ($transaksi->uang_diterima !== null)
                 <tr>
                     <td colspan="4" class="right">Uang diterima ({{ $transaksi->metode_pembayaran }})</td>

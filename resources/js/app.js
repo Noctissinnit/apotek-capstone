@@ -146,10 +146,17 @@ if (bagianTunai) {
         tampilanKembalian.classList.toggle('text-slate-900', kembali >= 0);
     };
 
+    const bagianReferensi = document.querySelector('[data-bagian-referensi]');
+
     const sesuaikanTampilan = () => {
         const tunai = document.querySelector('input[name="metode_pembayaran"]:checked')?.value === 'Tunai';
+
         bagianTunai.classList.toggle('hidden', !tunai);
         input.required = tunai;
+
+        // nomor referensi kebalikannya: hanya untuk pembayaran non-tunai
+        bagianReferensi?.classList.toggle('hidden', tunai);
+
         if (tunai) hitungKembalian();
     };
 

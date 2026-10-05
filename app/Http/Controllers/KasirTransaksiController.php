@@ -109,6 +109,8 @@ class KasirTransaksiController extends Controller
                 Rule::requiredIf($request->input('metode_pembayaran') === self::TUNAI),
                 'nullable', 'numeric', 'min:0',
             ],
+            // bukti pembayaran non-tunai, boleh dikosongkan
+            'no_referensi' => ['nullable', 'string', 'max:50'],
         ], [
             'uang_diterima.required' => 'Isi dulu uang yang diterima dari pembeli.',
         ]);
@@ -168,6 +170,8 @@ class KasirTransaksiController extends Controller
                 'uang_diterima' => $uangDiterimaCents === null ? null : $this->fromCents($uangDiterimaCents),
                 'kembalian' => $kembalianCents === null ? null : $this->fromCents($kembalianCents),
                 'metode_pembayaran' => $data['metode_pembayaran'],
+                // tunai tidak punya nomor bukti
+                'no_referensi' => $data['metode_pembayaran'] === self::TUNAI ? null : ($data['no_referensi'] ?? null),
             ]);
 
             foreach ($cart as $obatId => $jumlah) {

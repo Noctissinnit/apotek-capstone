@@ -27,6 +27,28 @@
     @enderror
 </fieldset>
 
+{{-- Kebalikan dari kolom tunai: hanya untuk pembayaran non-tunai --}}
+<div class="mt-4" data-bagian-referensi>
+    <label for="no_referensi" class="mb-1.5 block text-sm font-medium text-slate-700">
+        No. Referensi <span class="font-normal text-slate-400">(boleh dikosongkan)</span>
+    </label>
+    <input
+        id="no_referensi"
+        name="no_referensi"
+        value="{{ old('no_referensi') }}"
+        maxlength="50"
+        class="soft-input"
+        placeholder="Dari notifikasi HP atau struk EDC"
+        aria-describedby="referensi-bantuan"
+    >
+    <p id="referensi-bantuan" class="mt-1.5 text-xs text-slate-500">
+        Untuk mencocokkan penjualan dengan mutasi rekening nanti.
+    </p>
+    @error('no_referensi')
+        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+
 {{-- Hanya muncul untuk tunai; QRIS dan Transfer/Debit jumlahnya selalu pas --}}
 <div class="mt-4" data-bagian-tunai data-total="{{ $total }}">
     <label for="uang_diterima" class="mb-1.5 block text-sm font-medium text-slate-700">Uang diterima</label>

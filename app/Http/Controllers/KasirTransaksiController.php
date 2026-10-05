@@ -7,13 +7,15 @@ use App\Models\Obat;
 use App\Models\PemakaianBatch;
 use App\Models\Penjualan;
 use App\Models\User;
+use App\Support\QrisDinamis;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+use InvalidArgumentException;
 
 class KasirTransaksiController extends Controller
 {
@@ -45,6 +47,7 @@ class KasirTransaksiController extends Controller
             'jumlahPerObat' => $cart,
             'items' => $items,
             'subtotal' => $items->sum(fn (array $item) => $item['subtotal_cents']),
+            'qris' => $this->qrisUntukKeranjang($request->user(), $items),
         ]);
     }
 
@@ -56,6 +59,7 @@ class KasirTransaksiController extends Controller
             'items' => $items,
             'subtotal' => $items->sum(fn (array $item) => $item['subtotal_cents']),
             'jumlahItem' => $items->sum('jumlah'),
+            'qris' => $this->qrisUntukKeranjang($request->user(), $items),
         ]);
     }
 
@@ -206,6 +210,44 @@ class KasirTransaksiController extends Controller
             'url_struk' => route('kasir.riwayat.pdf', $penjualan),
             'url_transaksi_baru' => route('kasir.transaksi'),
         ]);
+    }
+
+    /**
+     * Siapkan kode QR berisi nominal belanja, supaya pembeli tinggal memindai.
+     * Mengembalikan null bila keranjang kosong, lalu status 'belum_diatur'
+     * bila kode QRIS apotek belum diisi di berkas .env.
+     *
+     * @param  \Illuminate\Support\Collection<int, array<string, mixed>>  $items
+     * @return array<string, mixed>|null
+     */
+    private function qrisUntukKeranjang(User $user, $items): ?array
+    {
+        $nominal = (int) round($items->sum(fn (array $item) => $item['subtotal_cents']) / 100);
+
+        if ($nominal < 1) {
+            return null;
+        }
+
+        $kodeStatis = (string) (config('apotek.qris.'.$user->apotek) ?? '');
+
+        if (trim($kodeStatis) === '') {
+            return ['status' => 'belum_diatur', 'nominal' => $nominal];
+        }
+
+        $qris = new QrisDinamis;
+
+        try {
+            return [
+                'status' => 'siap',
+                'nominal' => $nominal,
+                'svg' => $qris->gambarSvg($qris->dariStatis($kodeStatis, $nominal)),
+            ];
+        } catch (InvalidArgumentException $e) {
+            // kode QRIS salah salin, jangan sampai menghalangi penjualan
+            report($e);
+
+            return ['status' => 'tidak_terbaca', 'nominal' => $nominal];
+        }
     }
 
     /**

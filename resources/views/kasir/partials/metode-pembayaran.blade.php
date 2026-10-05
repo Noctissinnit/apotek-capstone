@@ -27,6 +27,31 @@
     @enderror
 </fieldset>
 
+{{-- Kode QR berisi nominal, ditunjukkan ke pembeli untuk dipindai --}}
+@if (($qris ?? null) !== null)
+    <div class="mt-4 hidden" data-bagian-qris>
+        @if ($qris['status'] === 'siap')
+            <div class="rounded-xl border border-slate-200 bg-white p-4 text-center">
+                <p class="text-sm font-medium text-slate-700">Minta pembeli memindai kode ini</p>
+                <div class="mx-auto mt-3 w-48 [&>svg]:h-auto [&>svg]:w-full">{!! $qris['svg'] !!}</div>
+                <p class="mt-3 text-lg font-bold text-slate-900">Rp {{ number_format($qris['nominal'], 0, ',', '.') }}</p>
+                <p class="mt-1 text-xs text-slate-500">
+                    Nominal sudah terisi otomatis. Pastikan notifikasi pembayaran masuk sebelum menekan Proses Pembayaran.
+                </p>
+            </div>
+        @elseif ($qris['status'] === 'belum_diatur')
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Kode QRIS apotek belum diatur, jadi kode QR tidak bisa ditampilkan.
+                Pembayaran QRIS tetap bisa dicatat memakai stiker QRIS di meja.
+            </div>
+        @else
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                Kode QRIS apotek tidak terbaca. Periksa kembali teks QRIS yang disalin ke pengaturan.
+            </div>
+        @endif
+    </div>
+@endif
+
 {{-- Kebalikan dari kolom tunai: hanya untuk pembayaran non-tunai --}}
 <div class="mt-4" data-bagian-referensi>
     <label for="no_referensi" class="mb-1.5 block text-sm font-medium text-slate-700">

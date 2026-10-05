@@ -147,15 +147,20 @@ if (bagianTunai) {
     };
 
     const bagianReferensi = document.querySelector('[data-bagian-referensi]');
+    const bagianQris = document.querySelector('[data-bagian-qris]');
 
     const sesuaikanTampilan = () => {
-        const tunai = document.querySelector('input[name="metode_pembayaran"]:checked')?.value === 'Tunai';
+        const dipilih = document.querySelector('input[name="metode_pembayaran"]:checked')?.value;
+        const tunai = dipilih === 'Tunai';
 
         bagianTunai.classList.toggle('hidden', !tunai);
         input.required = tunai;
 
         // nomor referensi kebalikannya: hanya untuk pembayaran non-tunai
         bagianReferensi?.classList.toggle('hidden', tunai);
+
+        // kode QR hanya relevan untuk QRIS
+        bagianQris?.classList.toggle('hidden', dipilih !== 'QRIS');
 
         if (tunai) hitungKembalian();
     };

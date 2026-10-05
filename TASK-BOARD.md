@@ -1,7 +1,7 @@
 # Task Board — Sistem Inventaris & Kasir Apotek
 
 **Acuan:** Implementation Plan Capstone Project - Kelompok 1
-**Terakhir diperbarui:** 30 September 2026 (setelah penutupan bug pemisahan data apotek)
+**Terakhir diperbarui:** 5 Oktober 2026 (setelah change request CR-01 dari mitra)
 
 ---
 
@@ -9,15 +9,16 @@
 
 | Bagian | Task | Progress |
 |---|---:|---|
-| **Keseluruhan** | 140 | `████████░░░░░░░░░░░░` **40%** |
+| **Keseluruhan** | 148 | `████████░░░░░░░░░░░░` **40%** |
 | W1 — Requirement Validation | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W2 — Requirement Baseline | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W3 — Analysis & Design | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W4 — Technical Foundation | 11 | `███████████████░░░░░` 77% |
 | W5 — Auth, Pharmacy & Inventory | 12 | `███████████████████░` 94% |
 | GAP — Temuan Gap Analysis | 7 | `██████░░░░░░░░░░░░░░` 29% |
-| EX — Fitur Tambahan | 3 | `████████████████████` 100% |
+| EX — Fitur Tambahan | 6 | `████████████████████` 100% |
 | BUG — Bug (semua sudah ditutup) | 3 | `████████████████████` 100% |
+| **CR-01 — Batch & Stok Kadaluarsa** | 5 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W6 — Cashier & Transaction | 15 | `████████████████░░░░` 80% |
 | W7 — Transaction ↔ Stock | 10 | `█████████████████░░░` 83% |
 | W8 — History & Reporting | 9 | `██████████████████░░` 92% |
@@ -26,7 +27,7 @@
 | W11 — UAT & Deployment | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W12 — Final Release | 14 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 
-**Jumlah per status:** ✅ DONE 49 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 7 · 📋 TODO 35 · 🗂️ BACKLOG 44
+**Jumlah per status:** ✅ DONE 52 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 7 · 📋 TODO 40 · 🗂️ BACKLOG 44
 
 **Test scenario:** 25 / 35 PASS · 4 sebagian · 0 gagal · 6 belum dijalankan
 
@@ -178,6 +179,22 @@ Sudah dikerjakan tetapi tidak ada di daftar task Implementation Plan.
 | EX-01 | CRUD Kategori Obat | Alexander | ✅ DONE | Tabel `kategori` + relasi ke obat, kategori yang masih dipakai tidak bisa dihapus. Teruji (`KategoriTest`) |
 | EX-02 | Menu sidebar mengikuti role & permission | Alexander | ✅ DONE | Menu yang tidak boleh diakses disembunyikan. Teruji (`SidebarTest`), termasuk test yang membuka semua menu untuk memastikan tidak ada yang berujung 403 |
 | EX-03 | Deploy tanpa npm | Alexander | ✅ DONE | Hasil build CSS/JS ikut disimpan di repo, hosting cukup upload. Langkah hosting ditulis di `README.md`. Mendukung W11-07 dan W11-09 |
+| EX-04 | Gambar obat | Alexander | ✅ DONE | Unggah, ganti, dan hapus foto obat. Disimpan di `public/uploads` agar hosting tidak perlu `storage:link`. Teruji (`GambarObatTest`) |
+| EX-05 | Cara pembayaran: Tunai, QRIS, Kartu Debit | Alexander | ✅ DONE | Dicatat saat checkout, tampil di riwayat dan PDF. Pembayaran tetap di meja kasir, bukan payment gateway |
+| EX-06 | Notifikasi & konfirmasi pembayaran | Alexander | ✅ DONE | Konfirmasi "Sudah yakin?" sebelum memproses, notifikasi hasil berisi faktur dan total, tombol dikunci agar tidak terkirim dua kali |
+
+## CR-01 — Batch, Satuan Beli & Penyelesaian Stok Kadaluarsa
+
+Perubahan requirement dari mitra setelah scope dikunci. Rinciannya di `CHANGE-REQUEST.md`.
+Keempat tahap ini **satu paket**: kalau hanya A dan B, stok batch tidak akan pernah berkurang.
+
+| ID | Task | Owner | Dependency | Status | Catatan |
+|---|---|---|---|---|---|
+| CR-01-A | Isi per box di master obat + tabel batch | Alexander | — | 📋 TODO | Pondasi untuk B, C, D. Perkiraan 1 hari |
+| CR-01-B | Modul barang masuk: form faktur, konversi, diskon, buat batch, tambah stok | Alexander | CR-01-A | 📋 TODO | Modulnya belum ada sama sekali, bukan sekadar menambah kolom. Perkiraan 2–3 hari |
+| CR-01-C | Stok berkurang otomatis dari batch terdekat ED + indikator kadaluarsa bertingkat | Alexander | CR-01-B | 📋 TODO | Menyentuh checkout yang sudah lolos G5, test harus tetap hijau. Perkiraan 1–2 hari |
+| CR-01-D | Retur & pemusnahan stok + Nota Retur/Berita Acara PDF + laporan nilai | Alexander | CR-01-C | 📋 TODO | Admin saja. Nilai retur dan nilai musnah dipisah. Perkiraan 1,5–2 hari |
+| CR-01-E | Tanya mitra: batas waktu retur sebelum ED | Samuel | — | 📋 TODO | Menentukan ambang peringatan "siapkan retur". Sementara dipakai 90 hari |
 
 ## Minggu 6 — Cashier & Sales Transaction
 

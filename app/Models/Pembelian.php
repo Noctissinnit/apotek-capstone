@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,7 @@ class Pembelian extends Model
         'no_faktur',
         'supplier_id',
         'user_id',
+        'apotek',
         'tanggal_pembelian',
         'total',
         'keterangan',
@@ -43,5 +45,16 @@ class Pembelian extends Model
     public function detail(): HasMany
     {
         return $this->hasMany(DetailPembelian::class);
+    }
+
+    /**
+     * Batasi faktur hanya milik apotek user yang sedang login.
+     *
+     * @param  Builder<Pembelian>  $query
+     * @return Builder<Pembelian>
+     */
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        return $query->where($query->getModel()->getTable().'.apotek', $user->apotek);
     }
 }

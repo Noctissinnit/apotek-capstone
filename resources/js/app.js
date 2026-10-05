@@ -2,6 +2,88 @@ import './bootstrap';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
+// ---------------------------------------------------------------------------
+// Form barang masuk: tambah/hapus baris, dan hitung konversi box ke satuan
+// ---------------------------------------------------------------------------
+const daftarItem = document.querySelector('[data-daftar-item]');
+
+if (daftarItem) {
+    const wadah = daftarItem.querySelector('[data-wadah-baris]');
+    const isiPerBox = JSON.parse(document.getElementById('data-isi-per-box')?.textContent ?? '{}');
+    const rupiah = (angka) => 'Rp ' + Math.round(angka).toLocaleString('id-ID');
+
+    // Nomor urut dan nama input disusun ulang supaya tetap rapi setelah ada baris dihapus
+    const susunUlang = () => {
+        wadah.querySelectorAll('[data-baris]').forEach((baris, urutan) => {
+            baris.querySelector('[data-nomor-baris]').textContent = urutan + 1;
+            baris.querySelectorAll('[name^="item["]').forEach((input) => {
+                input.name = input.name.replace(/item\[\d*\]/, `item[${urutan}]`);
+            });
+        });
+
+        const bisaDihapus = wadah.querySelectorAll('[data-baris]').length > 1;
+        wadah.querySelectorAll('[data-hapus-baris]').forEach((tombol) => {
+            tombol.disabled = !bisaDihapus;
+            tombol.classList.toggle('invisible', !bisaDihapus);
+        });
+    };
+
+    const hitung = () => {
+        let total = 0;
+
+        wadah.querySelectorAll('[data-baris]').forEach((baris) => {
+            const obat = isiPerBox[baris.querySelector('[data-pilih-obat]').value];
+            const satuan = baris.querySelector('[data-satuan-input]').value;
+            const jumlah = Number(baris.querySelector('[data-jumlah]').value) || 0;
+            const harga = Number(baris.querySelector('[data-harga]').value) || 0;
+            const diskon = Number(baris.querySelector('[data-diskon]').value) || 0;
+            const ringkasan = baris.querySelector('[data-ringkasan]');
+
+            const isi = satuan === 'box' ? (obat?.isi ?? 1) : 1;
+            const subtotal = jumlah * harga * (1 - diskon / 100);
+            total += subtotal;
+
+            if (!obat || jumlah < 1) {
+                ringkasan.innerHTML = '&nbsp;';
+                return;
+            }
+
+            const namaSatuan = obat.satuan ?? 'satuan';
+            ringkasan.textContent =
+                satuan === 'box'
+                    ? `${jumlah * isi} ${namaSatuan} · modal ${rupiah((harga * (1 - diskon / 100)) / isi)}/${namaSatuan}`
+                    : `${jumlah} ${namaSatuan} · ${rupiah(subtotal)}`;
+        });
+
+        daftarItem.querySelector('[data-total-faktur]').textContent = rupiah(total);
+    };
+
+    daftarItem.addEventListener('click', (event) => {
+        if (event.target.closest('[data-tambah-baris]')) {
+            const baru = wadah.querySelector('[data-baris]').cloneNode(true);
+            baru.querySelectorAll('input').forEach((input) => (input.value = ''));
+            baru.querySelectorAll('select').forEach((select) => (select.selectedIndex = 0));
+            wadah.append(baru);
+            susunUlang();
+            hitung();
+            baru.querySelector('[data-pilih-obat]').focus();
+        }
+
+        if (event.target.closest('[data-hapus-baris]')) {
+            if (wadah.querySelectorAll('[data-baris]').length < 2) return;
+            event.target.closest('[data-baris]').remove();
+            susunUlang();
+            hitung();
+        }
+    });
+
+    daftarItem.addEventListener('input', hitung);
+    daftarItem.addEventListener('change', hitung);
+
+    susunUlang();
+    hitung();
+}
+
 // Pratinjau gambar sebelum diunggah
 document.addEventListener('change', (event) => {
     const input = event.target.closest('input[type="file"][data-pratinjau]');

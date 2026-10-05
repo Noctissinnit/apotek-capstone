@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirTransaksiController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,12 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:obat.lihat');
     Route::resource('kategori', KategoriController::class)->except(['show'])
         ->middleware('permission:kategori.kelola');
+
+    // Barang masuk dari supplier
+    Route::resource('pembelian', PembelianController::class)->only(['create', 'store'])
+        ->middleware('permission:pembelian.kelola');
+    Route::resource('pembelian', PembelianController::class)->only(['index', 'show'])
+        ->middleware('permission:pembelian.lihat');
 
     Route::middleware('role:admin_apotek_a|admin_apotek_b')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');

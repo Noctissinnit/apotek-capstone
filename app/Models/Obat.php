@@ -90,6 +90,16 @@ class Obat extends Model
     }
 
     /**
+     * Stok yang benar-benar boleh dijual: tidak kadaluarsa dan tidak ditahan.
+     * Angkanya bisa lebih kecil dari kolom stok, misalnya saat ada batch
+     * kadaluarsa yang masih menunggu diretur atau dimusnahkan.
+     */
+    public function stokSiapDijual(): int
+    {
+        return (int) $this->batch()->siapDijual()->sum('stok');
+    }
+
+    /**
      * Batch paling dekat kadaluarsa yang masih boleh dijual.
      */
     public function batchTerdekatKadaluarsa(): ?BatchObat

@@ -24,9 +24,9 @@
             <p class="mt-1 text-xs text-slate-500">Stok di bawah batas minimum</p>
         </div>
         <div class="stat-card">
-            <p class="stat-label">Kadaluarsa &le; 3 Bulan</p>
-            <p class="stat-value {{ $obatHampirKadaluarsa->count() ? 'text-red-600' : 'text-slate-900' }}">{{ $obatHampirKadaluarsa->count() }}</p>
-            <p class="mt-1 text-xs text-slate-500">Perlu diperiksa lebih dulu</p>
+            <p class="stat-label">Perlu Perhatian</p>
+            <p class="stat-value {{ $batchPerluPerhatian->count() ? 'text-red-600' : 'text-slate-900' }}">{{ $batchPerluPerhatian->count() }}</p>
+            <p class="mt-1 text-xs text-slate-500">batch mendekati kadaluarsa</p>
         </div>
     </div>
 

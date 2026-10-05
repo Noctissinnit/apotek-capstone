@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BatchObat;
 use App\Models\Obat;
 use App\Models\Pembelian;
 use App\Models\Penjualan;
 use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +44,7 @@ class DashboardController extends Controller
         return view('kasir.dashboard', [
             'totalObat' => (clone $obat)->count(),
             'obatMenipis' => (clone $obat)->stokMenipis()->orderBy('stok')->get(),
-            'obatHampirKadaluarsa' => $this->obatHampirKadaluarsa(clone $obat),
+            'batchPerluPerhatian' => $this->batchPerluPerhatian($request->user()),
             'riwayatTerakhir' => Penjualan::query()
                 ->forUser($request->user())
                 ->with('detail.obat')
@@ -59,21 +61,42 @@ class DashboardController extends Controller
     {
         $obat = Obat::query()->forUser($request->user());
 
+        $ambang = config('apotek.peringatan_kadaluarsa');
+
+        // batch yang perlu diperhatikan, dikelompokkan per tingkat peringatan
+        $batch = BatchObat::query()
+            ->forUser($request->user())
+            ->with('obat')
+            ->where('stok', '>', 0)
+            ->whereNotNull('tanggal_kadaluarsa')
+            ->whereDate('tanggal_kadaluarsa', '<=', now()->addDays($ambang['siapkan_retur']))
+            ->orderBy('tanggal_kadaluarsa')
+            ->get()
+            ->groupBy(fn (BatchObat $item) => $item->tingkatKadaluarsa());
+
         return view('kasir.monitoring.index', [
             'totalObat' => (clone $obat)->count(),
             'obatMenipis' => (clone $obat)->stokMenipis()->orderBy('stok')->get(),
-            'obatHampirKadaluarsa' => $this->obatHampirKadaluarsa(clone $obat),
+            'batchKadaluarsa' => $batch->get('kadaluarsa', collect()),
+            'batchSegeraHabis' => $batch->get('segera_habis', collect()),
+            'batchSiapkanRetur' => $batch->get('siapkan_retur', collect()),
+            'ambang' => $ambang,
         ]);
     }
 
     /**
-     * @param  Builder<Obat>  $obat
-     * @return Collection<int, Obat>
+     * Batch yang stoknya masih ada dan tanggalnya sudah dekat atau lewat.
+     *
+     * @return Collection<int, BatchObat>
      */
-    private function obatHampirKadaluarsa(Builder $obat)
+    private function batchPerluPerhatian(User $user)
     {
-        return $obat->whereNotNull('tanggal_kadaluarsa')
-            ->whereDate('tanggal_kadaluarsa', '<=', now()->addMonths(3))
+        return BatchObat::query()
+            ->forUser($user)
+            ->with('obat')
+            ->where('stok', '>', 0)
+            ->whereNotNull('tanggal_kadaluarsa')
+            ->whereDate('tanggal_kadaluarsa', '<=', now()->addDays(config('apotek.peringatan_kadaluarsa.siapkan_retur')))
             ->orderBy('tanggal_kadaluarsa')
             ->get();
     }

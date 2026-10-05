@@ -27,9 +27,13 @@
                     @forelse ($obat as $item)
                         @php
                             $jumlahDiKeranjang = (int) ($jumlahPerObat[$item->id] ?? 0);
-                            $sisaStok = max(0, $item->stok - $jumlahDiKeranjang);
+                            // yang dipakai stok siap dijual: batch kadaluarsa dan yang ditahan tidak dihitung
+                            $sisaStok = max(0, $item->stokSiapDijual() - $jumlahDiKeranjang);
                             $habis = $sisaStok < 1;
                             $menipis = ! $habis && $sisaStok <= $item->stok_minimum;
+
+                            $batchTerdekat = $item->batchTerdekatKadaluarsa();
+                            $tingkat = $batchTerdekat?->tingkatKadaluarsa();
                         @endphp
                         <li class="list-row">
                             <div class="min-w-0">
@@ -50,6 +54,12 @@
                                         <span class="badge-warning">Tersedia {{ $sisaStok }} {{ $item->satuan }}</span>
                                     @else
                                         <span class="badge-neutral">Tersedia {{ $sisaStok }} {{ $item->satuan }}</span>
+                                    @endif
+
+                                    @if ($batchTerdekat && in_array($tingkat, ['segera_habis', 'siapkan_retur'], true))
+                                        <span class="{{ $tingkat === 'segera_habis' ? 'badge-danger' : 'badge-warning' }}" title="Batch {{ $batchTerdekat->no_batch }}">
+                                            Exp {{ $batchTerdekat->sisaHari() }} hari lagi
+                                        </span>
                                     @endif
                                 </div>
                             </div>

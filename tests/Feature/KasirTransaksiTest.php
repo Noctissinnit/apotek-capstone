@@ -26,7 +26,7 @@ class KasirTransaksiTest extends TestCase
 
     private function obat(int $stok = 5): Obat
     {
-        return Obat::create([
+        $obat = Obat::create([
             'kode_obat' => 'OBT-TEST',
             'nama_obat' => 'Obat Uji',
             'apotek' => 'Apotek A',
@@ -36,6 +36,16 @@ class KasirTransaksiTest extends TestCase
             'stok' => $stok,
             'stok_minimum' => 1,
         ]);
+
+        // stok yang bisa dijual berasal dari batch
+        $obat->batch()->create([
+            'no_batch' => 'BT-UJI',
+            'tanggal_kadaluarsa' => now()->addYear()->toDateString(),
+            'stok' => $stok,
+            'modal_per_satuan' => 4000,
+        ]);
+
+        return $obat;
     }
 
     public function test_checkout_mencatat_penjualan_dan_mengurangi_stok(): void
@@ -91,6 +101,12 @@ class KasirTransaksiTest extends TestCase
                 'harga_jual' => 6500,
                 'stok' => 5,
                 'stok_minimum' => 1,
+            ]);
+
+            $obat->batch()->create([
+                'no_batch' => 'BT-'.str($metode)->slug(),
+                'tanggal_kadaluarsa' => now()->addYear()->toDateString(),
+                'stok' => 5,
             ]);
 
             $this->actingAs($kasir)

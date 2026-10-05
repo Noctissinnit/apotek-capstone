@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DetailPenjualan;
 use App\Models\Obat;
+use App\Models\PemakaianBatch;
 use App\Models\Penjualan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -68,8 +69,12 @@ class KasirTransaksiController extends Controller
         $cart = $this->currentCart();
         $quantity = ($cart[$obat->id] ?? 0) + ($data['jumlah'] ?? 1);
 
-        if ($obat->stok < $quantity) {
-            return back()->with('error', "Stok {$obat->nama_obat} tidak mencukupi. Stok tersedia: {$obat->stok}.");
+        // yang dihitung adalah stok yang boleh dijual, bukan seluruh stok:
+        // batch kadaluarsa atau yang sedang ditahan tidak ikut
+        $tersedia = $obat->stokSiapDijual();
+
+        if ($tersedia < $quantity) {
+            return back()->with('error', "Stok {$obat->nama_obat} tidak mencukupi. Siap dijual: {$tersedia} {$obat->satuan}.");
         }
 
         $cart[$obat->id] = $quantity;
@@ -119,7 +124,7 @@ class KasirTransaksiController extends Controller
                     ]);
                 }
 
-                if ($obat->stok < $jumlah) {
+                if ($obat->stokSiapDijual() < $jumlah) {
                     throw ValidationException::withMessages([
                         'keranjang' => 'Stok salah satu obat berubah atau tidak mencukupi. Periksa kembali keranjang.',
                     ]);
@@ -141,7 +146,7 @@ class KasirTransaksiController extends Controller
                 $obat = $obatList->get($obatId);
                 $unitCents = $this->toCents((string) $obat->harga_jual);
 
-                DetailPenjualan::create([
+                $detail = DetailPenjualan::create([
                     'penjualan_id' => $penjualan->id,
                     'obat_id' => $obat->id,
                     'jumlah' => $jumlah,
@@ -149,6 +154,7 @@ class KasirTransaksiController extends Controller
                     'subtotal' => $this->fromCents($unitCents * $jumlah),
                 ]);
 
+                $this->ambilDariBatch($detail, $obat, $jumlah);
                 $obat->decrement('stok', $jumlah);
             }
 
@@ -166,6 +172,47 @@ class KasirTransaksiController extends Controller
             'url_struk' => route('kasir.riwayat.pdf', $penjualan),
             'url_transaksi_baru' => route('kasir.transaksi'),
         ]);
+    }
+
+    /**
+     * Kurangi stok dari batch yang paling dekat kadaluarsa lebih dulu.
+     * Kalau batch terdepan tidak cukup, sisanya diambil dari batch berikutnya.
+     * Kasir tidak memilih apa pun, ini berjalan sendiri saat pembayaran.
+     */
+    private function ambilDariBatch(DetailPenjualan $detail, Obat $obat, int $jumlah): void
+    {
+        $sisa = $jumlah;
+
+        $daftarBatch = $obat->batch()
+            ->siapDijual()
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($daftarBatch as $batch) {
+            if ($sisa < 1) {
+                break;
+            }
+
+            $diambil = min($sisa, $batch->stok);
+
+            PemakaianBatch::create([
+                'detail_penjualan_id' => $detail->id,
+                'batch_obat_id' => $batch->id,
+                'jumlah' => $diambil,
+                'modal_per_satuan' => $batch->modal_per_satuan,
+            ]);
+
+            $batch->decrement('stok', $diambil);
+            $sisa -= $diambil;
+        }
+
+        if ($sisa > 0) {
+            // tidak seharusnya terjadi karena sudah diperiksa sebelumnya,
+            // tetapi kalau sampai terjadi, seluruh transaksi dibatalkan
+            throw ValidationException::withMessages([
+                'keranjang' => "Stok {$obat->nama_obat} di catatan batch tidak mencukupi. Periksa data batch obat ini.",
+            ]);
+        }
     }
 
     /** @return array<int, int> */

@@ -69,7 +69,18 @@ class ObatController extends Controller
         $data = $this->validatedData($request);
         $data['gambar'] = $this->simpanGambar($request);
 
-        Obat::create($data);
+        $obat = Obat::create($data);
+
+        // Stok yang diisi langsung di master dicatat sebagai batch stok awal,
+        // supaya obat tetap bisa dijual walau belum pernah lewat barang masuk.
+        if ($obat->stok > 0) {
+            $obat->batch()->create([
+                'no_batch' => 'STOK-AWAL',
+                'tanggal_kadaluarsa' => $obat->tanggal_kadaluarsa,
+                'stok' => $obat->stok,
+                'modal_per_satuan' => $obat->harga_beli ?: null,
+            ]);
+        }
 
         return to_route('obat.index')->with('success', 'Data obat berhasil ditambahkan.');
     }
@@ -94,6 +105,12 @@ class ObatController extends Controller
 
         $data = $this->validatedData($request, $obat);
         $gambarLama = $obat->gambar;
+
+        // Kalau stoknya sudah terpecah jadi batch, angka stok tidak boleh diubah
+        // lewat form ini. Perubahannya harus lewat barang masuk atau penyesuaian stok.
+        if ($obat->batch()->exists()) {
+            unset($data['stok']);
+        }
 
         if ($request->boolean('hapus_gambar')) {
             $data['gambar'] = null;

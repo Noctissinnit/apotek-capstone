@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DetailPenjualan extends Model
 {
@@ -29,6 +30,14 @@ class DetailPenjualan extends Model
     public function penjualan(): BelongsTo
     {
         return $this->belongsTo(Penjualan::class);
+    }
+
+    /**
+     * Rincian batch mana saja yang dipakai untuk memenuhi baris penjualan ini.
+     */
+    public function pemakaianBatch(): HasMany
+    {
+        return $this->hasMany(PemakaianBatch::class);
     }
 
     public function obat(): BelongsTo

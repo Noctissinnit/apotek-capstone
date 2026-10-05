@@ -56,6 +56,28 @@ class BatchObat extends Model
     }
 
     /**
+     * Tingkat peringatan kadaluarsa, dipakai untuk menandai batch di layar.
+     * Nilainya: kadaluarsa, segera_habis, siapkan_retur, atau aman.
+     */
+    public function tingkatKadaluarsa(): string
+    {
+        $sisa = $this->sisaHari();
+
+        if ($sisa === null) {
+            return 'aman';
+        }
+
+        $ambang = config('apotek.peringatan_kadaluarsa');
+
+        return match (true) {
+            $sisa < 0 => 'kadaluarsa',
+            $sisa <= $ambang['segera_habis'] => 'segera_habis',
+            $sisa <= $ambang['siapkan_retur'] => 'siapkan_retur',
+            default => 'aman',
+        };
+    }
+
+    /**
      * Sisa hari menuju kadaluarsa. Minus berarti sudah lewat.
      */
     public function sisaHari(): ?int

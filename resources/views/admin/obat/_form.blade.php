@@ -38,7 +38,19 @@
     </div>
     <div><label for="harga_beli" class="mb-1 block text-sm font-medium">Harga Beli</label><input id="harga_beli" type="number" name="harga_beli" value="{{ old('harga_beli', $obat->harga_beli ?? 0) }}" required min="0" step="0.01" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('harga_beli')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div><label for="harga_jual" class="mb-1 block text-sm font-medium">Harga Jual</label><input id="harga_jual" type="number" name="harga_jual" value="{{ old('harga_jual', $obat->harga_jual ?? 0) }}" required min="0" step="0.01" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('harga_jual')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
-    <div><label for="stok" class="mb-1 block text-sm font-medium">Stok</label><input id="stok" type="number" name="stok" value="{{ old('stok', $obat->stok ?? 0) }}" required min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('stok')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
+    @php $stokDikelolaBatch = isset($obat) && $obat->exists && $obat->batch()->exists(); @endphp
+    <div>
+        <label for="stok" class="mb-1 block text-sm font-medium">Stok</label>
+        <input id="stok" type="number" name="stok" value="{{ old('stok', $obat->stok ?? 0) }}" required min="0"
+            @disabled($stokDikelolaBatch)
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100 disabled:text-slate-500">
+        <p class="mt-1 text-xs text-slate-500">
+            {{ $stokDikelolaBatch
+                ? 'Stok mengikuti catatan batch. Ubah lewat Barang Masuk.'
+                : 'Stok awal. Setelah ini, stok bertambah lewat Barang Masuk.' }}
+        </p>
+        @error('stok')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+    </div>
     <div><label for="stok_minimum" class="mb-1 block text-sm font-medium">Stok Minimum</label><input id="stok_minimum" type="number" name="stok_minimum" value="{{ old('stok_minimum', $obat->stok_minimum ?? 0) }}" required min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('stok_minimum')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div><label for="tanggal_kadaluarsa" class="mb-1 block text-sm font-medium">Tanggal Kadaluarsa</label><input id="tanggal_kadaluarsa" type="date" name="tanggal_kadaluarsa" value="{{ old('tanggal_kadaluarsa', isset($obat) && $obat->tanggal_kadaluarsa ? $obat->tanggal_kadaluarsa->format('Y-m-d') : '') }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('tanggal_kadaluarsa')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div class="sm:col-span-2"><label for="keterangan" class="mb-1 block text-sm font-medium">Keterangan</label><textarea id="keterangan" name="keterangan" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{ old('keterangan', $obat->keterangan ?? '') }}</textarea></div>

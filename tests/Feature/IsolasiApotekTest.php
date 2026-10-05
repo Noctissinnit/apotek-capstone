@@ -33,7 +33,7 @@ class IsolasiApotekTest extends TestCase
 
     private function obat(string $apotek, string $kode, int $stok = 10): Obat
     {
-        return Obat::create([
+        $obat = Obat::create([
             'kode_obat' => $kode,
             'nama_obat' => 'Obat '.$apotek.' '.$kode,
             'apotek' => $apotek,
@@ -42,6 +42,15 @@ class IsolasiApotekTest extends TestCase
             'stok' => $stok,
             'stok_minimum' => 1,
         ]);
+
+        // stok yang bisa dijual berasal dari batch
+        $obat->batch()->create([
+            'no_batch' => 'BT-'.$kode,
+            'tanggal_kadaluarsa' => now()->addYear()->toDateString(),
+            'stok' => $stok,
+        ]);
+
+        return $obat;
     }
 
     public function test_layar_kasir_hanya_menampilkan_obat_apoteknya(): void

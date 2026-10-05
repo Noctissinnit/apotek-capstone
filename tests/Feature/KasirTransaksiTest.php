@@ -89,9 +89,9 @@ class KasirTransaksiTest extends TestCase
         $this->assertSame(0, Penjualan::count());
     }
 
-    public function test_kasir_dapat_memilih_qris_atau_kartu_debit(): void
+    public function test_kasir_dapat_memilih_qris_atau_transfer_debit(): void
     {
-        foreach (['QRIS', 'Kartu Debit'] as $metode) {
+        foreach (['QRIS', 'Transfer/Debit'] as $metode) {
             $kasir = $this->kasir();
             $obat = Obat::create([
                 'kode_obat' => 'OBT-'.str($metode)->slug(),

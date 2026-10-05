@@ -30,7 +30,7 @@ class PenjualanSeeder extends Seeder
             [
                 'tanggal' => CarbonImmutable::yesterday()->setTime(9, 15),
                 'nomor' => 1,
-                'metode' => 'Kartu Debit',
+                'metode' => 'Transfer/Debit',
                 'items' => [['OBT002', 2], ['OBT004', 1]],
             ],
         ];

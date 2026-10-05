@@ -54,7 +54,7 @@
                             <td class="table-td">{{ $item->tanggal_penjualan->format('d/m/Y H:i') }}</td>
                             <td class="table-td">{{ $item->user->name }}</td>
                             <td class="table-td">
-                                <span class="{{ match ($item->metode_pembayaran) { 'QRIS' => 'badge-success', 'Kartu Debit' => 'badge-neutral', default => 'badge-warning' } }}">
+                                <span class="{{ match ($item->metode_pembayaran) { 'QRIS' => 'badge-success', 'Transfer/Debit' => 'badge-neutral', default => 'badge-warning' } }}">
                                     {{ $item->metode_pembayaran }}
                                 </span>
                             </td>

@@ -22,7 +22,7 @@ class KasirTransaksiController extends Controller
      * QRIS lewat stiker QR milik apotek, kartu debit lewat mesin EDC bank.
      * Sistem hanya mencatat, tidak memproses pembayaran.
      */
-    public const METODE_PEMBAYARAN = ['Tunai', 'QRIS', 'Kartu Debit'];
+    public const METODE_PEMBAYARAN = ['Tunai', 'QRIS', 'Transfer/Debit'];
 
     public function index(Request $request): View
     {

@@ -22,6 +22,7 @@ class RolePermissionSeeder extends Seeder
             'supplier.kelola',
             'pembelian.lihat',
             'pembelian.kelola',
+            'stok.penyesuaian',
         ];
 
         foreach ($permissions as $permission) {

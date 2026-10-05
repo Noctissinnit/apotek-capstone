@@ -84,6 +84,25 @@ if (daftarItem) {
     hitung();
 }
 
+// Form retur/pemusnahan: kolom supplier hanya relevan untuk retur
+const formPenyesuaian = document.querySelector('[data-form-penyesuaian]');
+
+if (formPenyesuaian) {
+    const bagianSupplier = formPenyesuaian.querySelector('[data-bagian-supplier]');
+
+    const sesuaikan = () => {
+        const retur = formPenyesuaian.querySelector('[data-pilih-jenis]:checked')?.value === 'retur';
+        bagianSupplier.classList.toggle('hidden', !retur);
+        bagianSupplier.querySelector('select').required = retur;
+    };
+
+    formPenyesuaian.addEventListener('change', (event) => {
+        if (event.target.closest('[data-pilih-jenis]')) sesuaikan();
+    });
+
+    sesuaikan();
+}
+
 // Keterangan satuan di form obat ikut berubah saat satuan dipilih
 document.addEventListener('change', (event) => {
     const pilihan = event.target.closest('[data-satuan-obat]');

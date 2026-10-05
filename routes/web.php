@@ -7,6 +7,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ObatController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\PenyesuaianStokController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,12 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:pembelian.kelola');
     Route::resource('pembelian', PembelianController::class)->only(['index', 'show'])
         ->middleware('permission:pembelian.lihat');
+
+    // Retur ke supplier dan pemusnahan stok, khusus admin
+    Route::middleware('permission:stok.penyesuaian')->group(function () {
+        Route::resource('penyesuaian', PenyesuaianStokController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('penyesuaian/{penyesuaian}/pdf', [PenyesuaianStokController::class, 'pdf'])->name('penyesuaian.pdf');
+    });
 
     Route::middleware('role:admin_apotek_a|admin_apotek_b')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');

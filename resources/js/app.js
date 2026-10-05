@@ -84,6 +84,16 @@ if (daftarItem) {
     hitung();
 }
 
+// Keterangan satuan di form obat ikut berubah saat satuan dipilih
+document.addEventListener('change', (event) => {
+    const pilihan = event.target.closest('[data-satuan-obat]');
+    if (!pilihan) return;
+
+    document.querySelectorAll('[data-label-satuan]').forEach((label) => {
+        label.textContent = pilihan.value || 'satuan';
+    });
+});
+
 // Pratinjau gambar sebelum diunggah
 document.addEventListener('change', (event) => {
     const input = event.target.closest('input[type="file"][data-pratinjau]');

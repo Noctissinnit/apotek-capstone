@@ -14,6 +14,24 @@ class Obat extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Pilihan satuan terkecil yang dijual ke pembeli.
+     * Ditambah di sini kalau mitra punya bentuk sediaan lain.
+     */
+    public const SATUAN = [
+        'Tablet',
+        'Kapsul',
+        'Strip',
+        'Botol',
+        'Tube',
+        'Sachet',
+        'Ampul',
+        'Pot',
+        'Pcs',
+        'Box',
+        'Dus',
+    ];
+
     protected $table = 'obat';
 
     protected $fillable = [

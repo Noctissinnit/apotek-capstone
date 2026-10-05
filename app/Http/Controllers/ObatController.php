@@ -7,6 +7,7 @@ use App\Models\Kategori;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ObatController extends Controller
@@ -138,7 +139,7 @@ class ObatController extends Controller
             'kode_obat' => ['required', 'string', 'max:20', 'unique:obat,kode_obat,' . ($obat?->id ?? 'NULL') . ',id'],
             'nama_obat' => ['required', 'string', 'max:255'],
             'kategori_id' => ['nullable', 'integer', 'exists:kategori,id_kategori'],
-            'satuan' => ['required', 'string', 'max:20'],
+            'satuan' => ['required', Rule::in(Obat::SATUAN)],
             // 1 box berisi berapa satuan terkecil, dipakai saat barang masuk
             'isi_per_box' => ['required', 'integer', 'min:1', 'max:100000'],
             'harga_beli' => ['required', 'numeric', 'min:0'],

@@ -8,12 +8,30 @@
     <div><label for="kategori_id" class="mb-1 block text-sm font-medium">Kategori</label><select id="kategori_id" name="kategori_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
             <option value="">Pilih kategori</option>@foreach ($kategori as $item)<option value="{{ $item->id_kategori }}" @selected(old('kategori_id', $obat->kategori_id ?? '') == $item->id_kategori)>{{ $item->nama_kategori }}</option>@endforeach
         </select>@error('kategori_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
-    <div><label for="satuan" class="mb-1 block text-sm font-medium">Satuan</label><input id="satuan" name="satuan" value="{{ old('satuan', $obat->satuan ?? '') }}" required maxlength="20" placeholder="Tablet, Strip, Botol" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('satuan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
+    @php
+        $satuanTerpilih = old('satuan', $obat->satuan ?? '');
+        // satuan lama yang tidak ada di daftar tetap ditampilkan agar data lama bisa disimpan ulang
+        $pilihanSatuan = collect(App\Models\Obat::SATUAN)->when(
+            $satuanTerpilih !== '' && ! in_array($satuanTerpilih, App\Models\Obat::SATUAN, true),
+            fn ($daftar) => $daftar->push($satuanTerpilih)
+        );
+    @endphp
+    <div>
+        <label for="satuan" class="mb-1 block text-sm font-medium">Satuan</label>
+        <select id="satuan" name="satuan" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" data-satuan-obat>
+            <option value="">Pilih satuan</option>
+            @foreach ($pilihanSatuan as $pilihan)
+                <option value="{{ $pilihan }}" @selected($satuanTerpilih === $pilihan)>{{ $pilihan }}</option>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs text-slate-500">Satuan terkecil yang dijual ke pembeli.</p>
+        @error('satuan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+    </div>
     <div>
         <label for="isi_per_box" class="mb-1 block text-sm font-medium">Isi per Box</label>
         <div class="flex items-center gap-2">
             <input id="isi_per_box" type="number" name="isi_per_box" value="{{ old('isi_per_box', $obat->isi_per_box ?? 1) }}" required min="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-            <span class="shrink-0 text-sm text-slate-500">{{ old('satuan', $obat->satuan ?? 'satuan') }} / box</span>
+            <span class="shrink-0 text-sm text-slate-500"><span data-label-satuan>{{ $satuanTerpilih ?: 'satuan' }}</span> / box</span>
         </div>
         <p class="mt-1 text-xs text-slate-500">Dipakai saat barang masuk. Contoh: 1 box = 100 tablet, isi 100.</p>
         @error('isi_per_box')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror

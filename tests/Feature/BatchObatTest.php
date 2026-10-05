@@ -76,6 +76,32 @@ class BatchObatTest extends TestCase
         $this->assertSame(100, Obat::where('kode_obat', 'OBT-BOX')->firstOrFail()->isi_per_box);
     }
 
+    public function test_satuan_dipilih_dari_daftar_dan_di_luar_daftar_ditolak(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->get(route('obat.create'))
+            ->assertOk()
+            ->assertSee('<option value="Tablet"', false)
+            ->assertSee('<option value="Botol"', false);
+
+        $this->actingAs($admin)
+            ->post(route('obat.store'), [
+                'kode_obat' => 'OBT-NGAWUR',
+                'nama_obat' => 'Obat Ngawur',
+                'satuan' => 'Karung',
+                'isi_per_box' => 10,
+                'harga_beli' => 0,
+                'harga_jual' => 600,
+                'stok' => 0,
+                'stok_minimum' => 1,
+            ])
+            ->assertSessionHasErrors('satuan');
+
+        $this->assertSame(0, Obat::count());
+    }
+
     public function test_isi_per_box_tidak_boleh_nol_atau_kosong(): void
     {
         $admin = $this->admin();

@@ -36,6 +36,7 @@ class GambarObatTest extends TestCase
             'nama_obat' => 'Obat Bergambar',
             'kategori_id' => Kategori::firstOrCreate(['nama_kategori' => 'Obat Bebas'])->id_kategori,
             'satuan' => 'Strip',
+            'isi_per_box' => 10,
             'harga_beli' => 1000,
             'harga_jual' => 2000,
             'stok' => 10,

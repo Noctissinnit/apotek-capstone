@@ -9,6 +9,15 @@
             <option value="">Pilih kategori</option>@foreach ($kategori as $item)<option value="{{ $item->id_kategori }}" @selected(old('kategori_id', $obat->kategori_id ?? '') == $item->id_kategori)>{{ $item->nama_kategori }}</option>@endforeach
         </select>@error('kategori_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div><label for="satuan" class="mb-1 block text-sm font-medium">Satuan</label><input id="satuan" name="satuan" value="{{ old('satuan', $obat->satuan ?? '') }}" required maxlength="20" placeholder="Tablet, Strip, Botol" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('satuan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
+    <div>
+        <label for="isi_per_box" class="mb-1 block text-sm font-medium">Isi per Box</label>
+        <div class="flex items-center gap-2">
+            <input id="isi_per_box" type="number" name="isi_per_box" value="{{ old('isi_per_box', $obat->isi_per_box ?? 1) }}" required min="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <span class="shrink-0 text-sm text-slate-500">{{ old('satuan', $obat->satuan ?? 'satuan') }} / box</span>
+        </div>
+        <p class="mt-1 text-xs text-slate-500">Dipakai saat barang masuk. Contoh: 1 box = 100 tablet, isi 100.</p>
+        @error('isi_per_box')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+    </div>
     <div><label for="harga_beli" class="mb-1 block text-sm font-medium">Harga Beli</label><input id="harga_beli" type="number" name="harga_beli" value="{{ old('harga_beli', $obat->harga_beli ?? 0) }}" required min="0" step="0.01" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('harga_beli')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div><label for="harga_jual" class="mb-1 block text-sm font-medium">Harga Jual</label><input id="harga_jual" type="number" name="harga_jual" value="{{ old('harga_jual', $obat->harga_jual ?? 0) }}" required min="0" step="0.01" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('harga_jual')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
     <div><label for="stok" class="mb-1 block text-sm font-medium">Stok</label><input id="stok" type="number" name="stok" value="{{ old('stok', $obat->stok ?? 0) }}" required min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">@error('stok')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>

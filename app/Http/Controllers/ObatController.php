@@ -139,6 +139,8 @@ class ObatController extends Controller
             'nama_obat' => ['required', 'string', 'max:255'],
             'kategori_id' => ['nullable', 'integer', 'exists:kategori,id_kategori'],
             'satuan' => ['required', 'string', 'max:20'],
+            // 1 box berisi berapa satuan terkecil, dipakai saat barang masuk
+            'isi_per_box' => ['required', 'integer', 'min:1', 'max:100000'],
             'harga_beli' => ['required', 'numeric', 'min:0'],
             'harga_jual' => ['required', 'numeric', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],

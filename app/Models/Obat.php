@@ -23,6 +23,7 @@ class Obat extends Model
         'apotek',
         'kategori_id',
         'satuan',
+        'isi_per_box',
         'harga_beli',
         'harga_jual',
         'stok',
@@ -46,6 +47,7 @@ class Obat extends Model
             'harga_jual' => 'decimal:2',
             'stok' => 'integer',
             'stok_minimum' => 'integer',
+            'isi_per_box' => 'integer',
             'tanggal_kadaluarsa' => 'date',
         ];
     }
@@ -53,6 +55,28 @@ class Obat extends Model
     public function detailPembelian(): HasMany
     {
         return $this->hasMany(DetailPembelian::class);
+    }
+
+    public function batch(): HasMany
+    {
+        return $this->hasMany(BatchObat::class);
+    }
+
+    /**
+     * Total stok menurut catatan batch, dalam satuan terkecil.
+     * Setelah modul barang masuk selesai, angka ini yang jadi patokan stok.
+     */
+    public function stokDariBatch(): int
+    {
+        return (int) $this->batch()->sum('stok');
+    }
+
+    /**
+     * Batch paling dekat kadaluarsa yang masih boleh dijual.
+     */
+    public function batchTerdekatKadaluarsa(): ?BatchObat
+    {
+        return $this->batch()->siapDijual()->first();
     }
 
     public function kategoriRelasi(): BelongsTo

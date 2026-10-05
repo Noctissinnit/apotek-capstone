@@ -141,7 +141,7 @@
                         data-total="Rp {{ number_format($subtotal / 100, 0, ',', '.') }}"
                         data-jumlah-item="{{ $jumlahKeranjang }}">
                         @csrf
-                        @include('kasir.partials.metode-pembayaran')
+                        @include('kasir.partials.metode-pembayaran', ['total' => (int) round($subtotal / 100)])
 
                         <button type="submit" class="btn-primary mt-5 w-full py-2.5">
                             Proses Pembayaran

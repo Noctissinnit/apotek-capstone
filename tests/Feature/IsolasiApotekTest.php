@@ -89,7 +89,7 @@ class IsolasiApotekTest extends TestCase
         // keranjang sengaja diisi langsung, meniru sisa sesi atau data yang dipaksakan
         $this->actingAs($this->kasir('Apotek A'))
             ->withSession(['kasir.cart' => [$obatB->id => 2]])
-            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai'])
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai', 'uang_diterima' => 1000000])
             ->assertSessionHasErrors('keranjang');
 
         $this->assertSame(10, $obatB->fresh()->stok);
@@ -160,7 +160,7 @@ class IsolasiApotekTest extends TestCase
     {
         $this->actingAs($kasir)
             ->withSession(['kasir.cart' => [$obat->id => $jumlah]])
-            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai'])
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai', 'uang_diterima' => 1000000])
             ->assertSessionHasNoErrors();
 
         // Di aplikasi nyata tiap kasir punya sesi browser sendiri. Di test sesinya

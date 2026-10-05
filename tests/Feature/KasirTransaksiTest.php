@@ -57,7 +57,7 @@ class KasirTransaksiTest extends TestCase
             ->post(route('kasir.keranjang.add'), ['obat_id' => $obat->id, 'jumlah' => 2])
             ->assertSessionHasNoErrors();
 
-        $this->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai'])
+        $this->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai', 'uang_diterima' => 1000000])
             ->assertRedirect(route('kasir.keranjang'));
 
         $this->assertSame(3, $obat->fresh()->stok);
@@ -82,7 +82,7 @@ class KasirTransaksiTest extends TestCase
 
         $this->actingAs($kasir)
             ->withSession(['kasir.cart' => [$obat->id => 2]])
-            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai'])
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai', 'uang_diterima' => 1000000])
             ->assertSessionHasErrors('keranjang');
 
         $this->assertSame(1, $obat->fresh()->stok);

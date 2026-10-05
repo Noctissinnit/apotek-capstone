@@ -22,7 +22,9 @@ class KasirTransaksiController extends Controller
      * QRIS lewat stiker QR milik apotek, kartu debit lewat mesin EDC bank.
      * Sistem hanya mencatat, tidak memproses pembayaran.
      */
-    public const METODE_PEMBAYARAN = ['Tunai', 'QRIS', 'Transfer/Debit'];
+    public const TUNAI = 'Tunai';
+
+    public const METODE_PEMBAYARAN = [self::TUNAI, 'QRIS', 'Transfer/Debit'];
 
     public function index(Request $request): View
     {
@@ -102,6 +104,13 @@ class KasirTransaksiController extends Controller
 
         $data = $request->validate([
             'metode_pembayaran' => ['required', Rule::in(self::METODE_PEMBAYARAN)],
+            // hanya relevan untuk tunai; QRIS dan Transfer/Debit selalu pas
+            'uang_diterima' => [
+                Rule::requiredIf($request->input('metode_pembayaran') === self::TUNAI),
+                'nullable', 'numeric', 'min:0',
+            ],
+        ], [
+            'uang_diterima.required' => 'Isi dulu uang yang diterima dari pembeli.',
         ]);
 
         $penjualan = DB::transaction(function () use ($cart, $request, $data): Penjualan {
@@ -133,12 +142,31 @@ class KasirTransaksiController extends Controller
                 $totalCents += $this->toCents((string) $obat->harga_jual) * $jumlah;
             }
 
+            // uang pembeli dicatat hanya untuk tunai, berikut kembaliannya
+            $uangDiterimaCents = null;
+            $kembalianCents = null;
+
+            if ($data['metode_pembayaran'] === self::TUNAI) {
+                $uangDiterimaCents = $this->toCents(number_format((float) $data['uang_diterima'], 2, '.', ''));
+
+                if ($uangDiterimaCents < $totalCents) {
+                    throw ValidationException::withMessages([
+                        'uang_diterima' => 'Uang yang diterima kurang dari total belanja Rp '
+                            .number_format($totalCents / 100, 0, ',', '.').'.',
+                    ]);
+                }
+
+                $kembalianCents = $uangDiterimaCents - $totalCents;
+            }
+
             $penjualan = Penjualan::create([
                 'no_faktur' => 'TRX-'.now()->format('Ymd-His').'-'.Str::upper(Str::random(5)),
                 'user_id' => $request->user()->id,
                 'apotek' => $request->user()->apotek,
                 'tanggal_penjualan' => now(),
                 'total' => $this->fromCents($totalCents),
+                'uang_diterima' => $uangDiterimaCents === null ? null : $this->fromCents($uangDiterimaCents),
+                'kembalian' => $kembalianCents === null ? null : $this->fromCents($kembalianCents),
                 'metode_pembayaran' => $data['metode_pembayaran'],
             ]);
 
@@ -168,6 +196,8 @@ class KasirTransaksiController extends Controller
             'no_faktur' => $penjualan->no_faktur,
             'total' => 'Rp '.number_format((float) $penjualan->total, 0, ',', '.'),
             'metode_pembayaran' => $penjualan->metode_pembayaran,
+            'uang_diterima' => $penjualan->uang_diterima === null ? null : 'Rp '.number_format((float) $penjualan->uang_diterima, 0, ',', '.'),
+            'kembalian' => $penjualan->kembalian === null ? null : 'Rp '.number_format((float) $penjualan->kembalian, 0, ',', '.'),
             'jumlah_item' => array_sum($cart),
             'url_struk' => route('kasir.riwayat.pdf', $penjualan),
             'url_transaksi_baru' => route('kasir.transaksi'),

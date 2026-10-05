@@ -49,6 +49,16 @@
                 <th colspan="4" class="right">Total transaksi</th>
                 <th class="right">Rp {{ number_format($transaksi->total, 0, ',', '.') }}</th>
             </tr>
+            @if ($transaksi->uang_diterima !== null)
+                <tr>
+                    <td colspan="4" class="right">Uang diterima ({{ $transaksi->metode_pembayaran }})</td>
+                    <td class="right">Rp {{ number_format($transaksi->uang_diterima, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <th colspan="4" class="right">Kembalian</th>
+                    <th class="right">Rp {{ number_format($transaksi->kembalian, 0, ',', '.') }}</th>
+                </tr>
+            @endif
         </tfoot>
     </table>
 </body>

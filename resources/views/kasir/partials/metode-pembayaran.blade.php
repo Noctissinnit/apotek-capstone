@@ -26,3 +26,41 @@
         <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
     @enderror
 </fieldset>
+
+{{-- Hanya muncul untuk tunai; QRIS dan Transfer/Debit jumlahnya selalu pas --}}
+<div class="mt-4" data-bagian-tunai data-total="{{ $total }}">
+    <label for="uang_diterima" class="mb-1.5 block text-sm font-medium text-slate-700">Uang diterima</label>
+
+    <div class="flex flex-wrap gap-1.5">
+        <button type="button" class="btn-ghost px-2.5 py-1 text-xs" data-uang-cepat="{{ $total }}">Uang pas</button>
+        @foreach ([20000, 50000, 100000] as $nominal)
+            @if ($nominal > $total)
+                <button type="button" class="btn-ghost px-2.5 py-1 text-xs" data-uang-cepat="{{ $nominal }}">
+                    {{ number_format($nominal / 1000) }}rb
+                </button>
+            @endif
+        @endforeach
+    </div>
+
+    <input
+        id="uang_diterima"
+        type="number"
+        name="uang_diterima"
+        value="{{ old('uang_diterima') }}"
+        min="0"
+        step="100"
+        inputmode="numeric"
+        placeholder="0"
+        class="soft-input mt-2 text-right text-lg font-semibold"
+        data-uang-diterima
+    >
+
+    <div class="mt-2 flex items-baseline justify-between rounded-xl bg-slate-50 px-3 py-2">
+        <span class="text-sm text-slate-500">Kembalian</span>
+        <span class="text-lg font-bold text-slate-900" data-kembalian>Rp 0</span>
+    </div>
+
+    @error('uang_diterima')
+        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+    @enderror
+</div>

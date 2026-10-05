@@ -21,6 +21,8 @@ class Penjualan extends Model
         'nama_pelanggan',
         'tanggal_penjualan',
         'total',
+        'uang_diterima',
+        'kembalian',
         'metode_pembayaran',
         'keterangan',
     ];
@@ -30,6 +32,8 @@ class Penjualan extends Model
         return [
             'tanggal_penjualan' => 'datetime',
             'total' => 'decimal:2',
+            'uang_diterima' => 'decimal:2',
+            'kembalian' => 'decimal:2',
         ];
     }
 

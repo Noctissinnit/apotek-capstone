@@ -59,7 +59,7 @@ class PenjualanBatchTest extends TestCase
     {
         return $this->actingAs($kasir)
             ->withSession(['kasir.cart' => $keranjang])
-            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai']);
+            ->post(route('kasir.checkout'), ['metode_pembayaran' => 'Tunai', 'uang_diterima' => 1000000]);
     }
 
     public function test_stok_diambil_dari_batch_paling_dekat_kadaluarsa(): void

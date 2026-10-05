@@ -128,6 +128,49 @@ document.addEventListener('change', (event) => {
     kosong?.classList.add('hidden');
 });
 
+// Uang diterima dan kembalian, hanya untuk pembayaran tunai
+const bagianTunai = document.querySelector('[data-bagian-tunai]');
+
+if (bagianTunai) {
+    const total = Number(bagianTunai.dataset.total) || 0;
+    const input = bagianTunai.querySelector('[data-uang-diterima]');
+    const tampilanKembalian = bagianTunai.querySelector('[data-kembalian]');
+    const rupiah = (angka) => 'Rp ' + Math.round(angka).toLocaleString('id-ID');
+
+    const hitungKembalian = () => {
+        const diterima = Number(input.value) || 0;
+        const kembali = diterima - total;
+
+        tampilanKembalian.textContent = kembali >= 0 ? rupiah(kembali) : 'Kurang ' + rupiah(Math.abs(kembali));
+        tampilanKembalian.classList.toggle('text-red-600', kembali < 0);
+        tampilanKembalian.classList.toggle('text-slate-900', kembali >= 0);
+    };
+
+    const sesuaikanTampilan = () => {
+        const tunai = document.querySelector('input[name="metode_pembayaran"]:checked')?.value === 'Tunai';
+        bagianTunai.classList.toggle('hidden', !tunai);
+        input.required = tunai;
+        if (tunai) hitungKembalian();
+    };
+
+    document.addEventListener('change', (event) => {
+        if (event.target.name === 'metode_pembayaran') sesuaikanTampilan();
+    });
+
+    input.addEventListener('input', hitungKembalian);
+
+    bagianTunai.addEventListener('click', (event) => {
+        const tombol = event.target.closest('[data-uang-cepat]');
+        if (!tombol) return;
+
+        input.value = tombol.dataset.uangCepat;
+        hitungKembalian();
+        input.focus();
+    });
+
+    sesuaikanTampilan();
+}
+
 // Konfirmasi sebelum pembayaran diproses, supaya kasir tidak salah tekan
 document.addEventListener('submit', (event) => {
     const form = event.target.closest('[data-konfirmasi-bayar]');
@@ -208,6 +251,19 @@ if (dataTransaksi) {
                     <span class="text-slate-500">Total</span>
                     <span class="text-xl font-bold text-emerald-700">${transaksi.total}</span>
                 </div>
+                ${
+                    transaksi.kembalian
+                        ? `<div class="mt-2 rounded-xl bg-amber-50 p-3">
+                               <div class="flex justify-between text-xs text-slate-600">
+                                   <span>Uang diterima</span><span>${transaksi.uang_diterima}</span>
+                               </div>
+                               <div class="mt-1 flex items-baseline justify-between">
+                                   <span class="text-sm font-medium text-slate-700">Kembalian</span>
+                                   <span class="text-xl font-bold text-amber-700">${transaksi.kembalian}</span>
+                               </div>
+                           </div>`
+                        : ''
+                }
             </div>
         `,
         showDenyButton: true,

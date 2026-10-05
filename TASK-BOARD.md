@@ -1,7 +1,7 @@
 # Task Board — Sistem Inventaris & Kasir Apotek
 
 **Acuan:** Implementation Plan Capstone Project - Kelompok 1
-**Terakhir diperbarui:** 5 Oktober 2026 (setelah change request CR-01 dari mitra)
+**Terakhir diperbarui:** 5 Oktober 2026 (setelah CR-01 tahap A sampai D selesai)
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Bagian | Task | Progress |
 |---|---:|---|
-| **Keseluruhan** | 148 | `████████░░░░░░░░░░░░` **40%** |
+| **Keseluruhan** | 148 | `█████████░░░░░░░░░░░` **43%** |
 | W1 — Requirement Validation | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W2 — Requirement Baseline | 8 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W3 — Analysis & Design | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
@@ -18,7 +18,7 @@
 | GAP — Temuan Gap Analysis | 7 | `██████░░░░░░░░░░░░░░` 29% |
 | EX — Fitur Tambahan | 6 | `████████████████████` 100% |
 | BUG — Bug (semua sudah ditutup) | 3 | `████████████████████` 100% |
-| **CR-01 — Batch & Stok Kadaluarsa** | 5 | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| **CR-01 — Batch & Stok Kadaluarsa** | 5 | `████████████████░░░░` 80% |
 | W6 — Cashier & Transaction | 15 | `████████████████░░░░` 80% |
 | W7 — Transaction ↔ Stock | 10 | `█████████████████░░░` 83% |
 | W8 — History & Reporting | 9 | `██████████████████░░` 92% |
@@ -27,11 +27,11 @@
 | W11 — UAT & Deployment | 10 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 | W12 — Final Release | 14 | `░░░░░░░░░░░░░░░░░░░░` 0% |
 
-**Jumlah per status:** ✅ DONE 52 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 7 · 📋 TODO 40 · 🗂️ BACKLOG 44
+**Jumlah per status:** ✅ DONE 56 · 🔍 REVIEW 5 · 🔄 IN PROGRESS 7 · 📋 TODO 36 · 🗂️ BACKLOG 44
 
 **Test scenario:** 25 / 35 PASS · 4 sebagian · 0 gagal · 6 belum dijalankan
 
-**Test otomatis:** 55 test, 315 assertion, seluruhnya lulus (`php artisan test`)
+**Test otomatis:** 103 test, 487 assertion, seluruhnya lulus (`php artisan test`)
 
 > ✅ **Tidak ada bug Critical yang terbuka.** Tiga bug pemisahan data apotek sudah
 > ditutup pada 30 September 2026, dan Gate G5 (alur inti transaksi-stok) terpenuhi.
@@ -160,7 +160,7 @@ Task yang muncul dari pengecekan kode terhadap Implementation Plan.
 | GAP-04 | Sesuaikan seeder dengan data 2 apotek | Samuel | GAP-01 | ✅ DONE | 4 akun (admin & kasir tiap apotek), 12 obat dibagi 6-6. Nama apotek masih "Apotek A"/"Apotek B", belum nama asli mitra |
 | GAP-05 | Lengkapi test TC-AUTH-05 (halaman terlindungi tidak bisa dibuka setelah logout) | Alexander | — | 📋 TODO | |
 | GAP-06 | Hapus atau perbaiki `resources/views/kasir/obat/index.blade.php` | Pieter | — | 📋 TODO | View rusak: memanggil route `kasir.obat.index` yang tidak ada, dan tidak dipakai controller mana pun |
-| GAP-07 | Bersihkan baris `Co-Authored-By: Claude` dari 9 commit lama | Alexander | W9-08 | 📋 TODO | Sudah terlanjur ada di GitHub pada `main`, `development`, dan 6 branch fitur. Perlu tulis ulang sejarah + force-push, jadi **dikerjakan setelah semua branch digabung dan tidak ada yang sedang bekerja**. Buat tag cadangan dulu, lalu seluruh anggota re-clone. Commit baru sudah tidak ditandai lagi |
+| GAP-07 | Bersihkan baris co-author tambahan dari 9 commit lama | Alexander | W9-08 | 📋 TODO | Sudah terlanjur ada di GitHub pada `main`, `development`, dan 6 branch fitur. Perlu tulis ulang sejarah + force-push, jadi **dikerjakan setelah semua branch digabung dan tidak ada yang sedang bekerja**. Buat tag cadangan dulu, lalu seluruh anggota re-clone. Commit baru sudah bersih |
 
 ## Bug (Riwayat Perbaikan)
 
@@ -190,10 +190,10 @@ Keempat tahap ini **satu paket**: kalau hanya A dan B, stok batch tidak akan per
 
 | ID | Task | Owner | Dependency | Status | Catatan |
 |---|---|---|---|---|---|
-| CR-01-A | Isi per box di master obat + tabel batch | Alexander | — | 📋 TODO | Pondasi untuk B, C, D. Perkiraan 1 hari |
-| CR-01-B | Modul barang masuk: form faktur, konversi, diskon, buat batch, tambah stok | Alexander | CR-01-A | 📋 TODO | Modulnya belum ada sama sekali, bukan sekadar menambah kolom. Perkiraan 2–3 hari |
-| CR-01-C | Stok berkurang otomatis dari batch terdekat ED + indikator kadaluarsa bertingkat | Alexander | CR-01-B | 📋 TODO | Menyentuh checkout yang sudah lolos G5, test harus tetap hijau. Perkiraan 1–2 hari |
-| CR-01-D | Retur & pemusnahan stok + Nota Retur/Berita Acara PDF + laporan nilai | Alexander | CR-01-C | 📋 TODO | Admin saja. Nilai retur dan nilai musnah dipisah. Perkiraan 1,5–2 hari |
+| CR-01-A | Isi per box di master obat + tabel batch | Alexander | — | ✅ DONE | Kolom `isi_per_box`, tabel `batch_obat` dengan status aktif/ditahan, nomor batch unik per obat. Teruji (`BatchObatTest`) |
+| CR-01-B | Modul barang masuk: form faktur, konversi, diskon, buat batch, tambah stok | Alexander | CR-01-A | ✅ DONE | Jumlah bisa diketik dalam box atau satuan terkecil. Satu baris faktur = satu batch. Teruji (`PembelianTest`) |
+| CR-01-C | Stok berkurang otomatis dari batch terdekat ED + indikator kadaluarsa bertingkat | Alexander | CR-01-B | ✅ DONE | Pengambilan lintas batch bila perlu, batch kadaluarsa dan ditahan dilewati. Ambang 30/90 hari di `config/apotek.php`. Teruji (`PenjualanBatchTest`) |
+| CR-01-D | Retur & pemusnahan stok + Nota Retur/Berita Acara PDF + laporan nilai | Alexander | CR-01-C | ✅ DONE | Dokumen bernomor RTR/BAP, bisa keluarkan sebagian, alasan kadaluarsa/rusak/hilang. Nilai retur dan musnah dipisah. Teruji (`PenyesuaianStokTest`) |
 | CR-01-E | Tanya mitra: batas waktu retur sebelum ED | Samuel | — | 📋 TODO | Menentukan ambang peringatan "siapkan retur". Sementara dipakai 90 hari |
 
 ## Minggu 6 — Cashier & Sales Transaction

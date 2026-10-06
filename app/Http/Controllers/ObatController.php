@@ -6,8 +6,11 @@ use App\Models\Obat;
 use App\Models\Kategori;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ObatController extends Controller
@@ -69,9 +72,14 @@ class ObatController extends Controller
             : view('admin.obat.create', $data);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): Response|RedirectResponse
     {
-        $data = $this->validatedData($request);
+        try {
+            $data = $this->validatedData($request);
+        } catch (ValidationException $gagal) {
+            return $this->tanggapiIsianSalah($request, $gagal, new Obat);
+        }
+
         $data['gambar'] = $this->simpanGambar($request);
 
         $obat = Obat::create($data);
@@ -108,11 +116,16 @@ class ObatController extends Controller
             : view('admin.obat.edit', $data);
     }
 
-    public function update(Request $request, Obat $obat): RedirectResponse
+    public function update(Request $request, Obat $obat): Response|RedirectResponse
     {
         $this->ensureSameApotek($obat);
 
-        $data = $this->validatedData($request, $obat);
+        try {
+            $data = $this->validatedData($request, $obat);
+        } catch (ValidationException $gagal) {
+            return $this->tanggapiIsianSalah($request, $gagal, $obat);
+        }
+
         $gambarLama = $obat->gambar;
 
         // Kalau stoknya sudah terpecah jadi batch, angka stok tidak boleh diubah
@@ -151,13 +164,38 @@ class ObatController extends Controller
      * Setelah tersimpan, kembali ke daftar obat. Kalau permintaannya datang
      * dari modal, cukup beri tanda agar modal ditutup dan daftarnya disegarkan.
      */
-    private function kembaliKeDaftar(Request $request, string $pesan): RedirectResponse
+    private function kembaliKeDaftar(Request $request, string $pesan): Response|RedirectResponse
     {
-        $tujuan = to_route('obat.index')->with('success', $pesan);
+        // Permintaan dari modal tidak boleh dijawab dengan pengalihan: htmx akan
+        // mengikutinya lalu memasukkan seluruh halaman ke dalam modal. Cukup
+        // balas tanpa isi dan minta htmx memuat ulang halamannya.
+        if ($request->header('HX-Request')) {
+            session()->flash('success', $pesan);
 
-        return $request->header('HX-Request')
-            ? $tujuan->header('X-Tutup-Modal', '1')
-            : $tujuan;
+            return response()->noContent()->header('HX-Refresh', 'true');
+        }
+
+        return to_route('obat.index')->with('success', $pesan);
+    }
+
+    /**
+     * Isian yang salah dari modal dijawab dengan formnya lagi beserta pesan
+     * kesalahan, bukan pengalihan, supaya modal tetap terbuka.
+     */
+    private function tanggapiIsianSalah(Request $request, ValidationException $gagal, Obat $obat): Response
+    {
+        if (! $request->header('HX-Request')) {
+            throw $gagal;
+        }
+
+        // supaya isian yang sudah diketik tidak hilang saat form ditampilkan ulang
+        $request->flash();
+
+        return response()->view('admin.obat.modal-form', [
+            'obat' => $obat,
+            'kategori' => Kategori::orderBy('nama_kategori')->get(),
+            'errors' => (new ViewErrorBag)->put('default', $gagal->validator->errors()),
+        ], 422);
     }
 
     /**

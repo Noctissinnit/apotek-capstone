@@ -103,35 +103,67 @@ class ModalObatTest extends TestCase
             ->assertSeeText('Siap Dijual');
     }
 
-    public function test_simpan_dari_modal_memberi_tanda_agar_modal_ditutup(): void
-    {
-        $this->actingAs($this->admin())
-            ->withHeader('HX-Request', 'true')
-            ->post(route('obat.store'), $this->dataObat())
-            ->assertRedirect(route('obat.index'))
-            ->assertHeader('X-Tutup-Modal', '1');
-
-        $this->assertDatabaseHas('obat', ['kode_obat' => 'OBT-BARU']);
-    }
-
-    public function test_simpan_tanpa_modal_tidak_memberi_tanda_itu(): void
+    public function test_simpan_dari_modal_tidak_boleh_dijawab_dengan_pengalihan(): void
     {
         $response = $this->actingAs($this->admin())
+            ->withHeader('HX-Request', 'true')
             ->post(route('obat.store'), $this->dataObat());
 
-        $response->assertRedirect(route('obat.index'));
-        $this->assertNull($response->headers->get('X-Tutup-Modal'));
+        // pengalihan akan diikuti htmx, lalu seluruh halaman masuk ke dalam jendela
+        $response->assertNoContent()->assertHeader('HX-Refresh', 'true');
+        $this->assertFalse($response->isRedirect(), 'balasan untuk jendela tidak boleh berupa pengalihan');
+
+        $this->assertDatabaseHas('obat', ['kode_obat' => 'OBT-BARU']);
+        $this->assertSame('Data obat berhasil ditambahkan.', session('success'));
     }
 
-    public function test_isian_salah_dari_modal_tidak_menutup_modal(): void
+    public function test_simpan_tanpa_modal_tetap_mengalihkan_seperti_biasa(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('obat.store'), $this->dataObat())
+            ->assertRedirect(route('obat.index'))
+            ->assertSessionHas('success');
+    }
+
+    public function test_isian_salah_dari_modal_dibalas_formnya_lagi_bukan_halaman_penuh(): void
     {
         $response = $this->actingAs($this->admin())
             ->withHeader('HX-Request', 'true')
-            ->post(route('obat.store'), $this->dataObat(['nama_obat' => '']));
+            ->post(route('obat.store'), $this->dataObat(['nama_obat' => '', 'kode_obat' => 'OBT-DIKETIK']));
 
-        $response->assertSessionHasErrors('nama_obat');
-        $this->assertNull($response->headers->get('X-Tutup-Modal'), 'modal harus tetap terbuka agar pesan error terlihat');
+        $response->assertStatus(422)
+            ->assertDontSee('<!DOCTYPE html>', false)
+            ->assertDontSee('id="sidebar"', false)
+            ->assertSeeText('Tambah Obat')
+            ->assertSee('value="OBT-DIKETIK"', false)    // isian yang sudah diketik tidak hilang
+            ->assertSee(trans('validation.required', ['attribute' => 'nama obat']));
+
         $this->assertSame(0, Obat::count());
+    }
+
+    public function test_isian_salah_tanpa_modal_tetap_kembali_ke_halaman_sebelumnya(): void
+    {
+        $this->actingAs($this->admin())
+            ->from(route('obat.create'))
+            ->post(route('obat.store'), $this->dataObat(['nama_obat' => '']))
+            ->assertRedirect(route('obat.create'))
+            ->assertSessionHasErrors('nama_obat');
+    }
+
+    public function test_ubah_dari_modal_juga_tidak_mengalihkan(): void
+    {
+        $obat = $this->obat();
+
+        $this->actingAs($this->admin())
+            ->withHeader('HX-Request', 'true')
+            ->put(route('obat.update', $obat), $this->dataObat([
+                'kode_obat' => $obat->kode_obat,
+                'nama_obat' => 'Nama Diperbarui',
+            ]))
+            ->assertNoContent()
+            ->assertHeader('HX-Refresh', 'true');
+
+        $this->assertSame('Nama Diperbarui', $obat->fresh()->nama_obat);
     }
 
     public function test_obat_apotek_lain_tidak_bisa_dibuka_lewat_modal(): void

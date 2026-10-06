@@ -23,11 +23,13 @@ if (modal) {
         isi.querySelector('input, select, textarea')?.focus();
     });
 
-    // server membalas dengan header ini setelah data tersimpan
-    document.body.addEventListener('htmx:afterRequest', (event) => {
-        if (event.detail.xhr?.getResponseHeader('X-Tutup-Modal')) {
-            tutup();
-            window.location.reload();
+    // Isian yang ditolak server dibalas dengan status 422 berisi formnya lagi.
+    // Bawaan htmx mengabaikan balasan 4xx, jadi di sini diizinkan agar pesan
+    // kesalahannya tampil di dalam jendela.
+    document.body.addEventListener('htmx:beforeSwap', (event) => {
+        if (event.detail.xhr?.status === 422) {
+            event.detail.shouldSwap = true;
+            event.detail.isError = false;
         }
     });
 

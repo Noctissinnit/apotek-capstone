@@ -6,7 +6,7 @@
 --}}
 @props(['judul', 'keterangan' => null])
 
-<div class="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-3">
+<div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-4 py-3">
     <div class="min-w-0">
         <h2 id="modal-judul" class="text-sm font-semibold text-slate-900">{{ $judul }}</h2>
         @if ($keterangan)

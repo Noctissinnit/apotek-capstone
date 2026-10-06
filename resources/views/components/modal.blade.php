@@ -6,7 +6,7 @@
     kalau JavaScript mati, tautan dan tombolnya berjalan seperti biasa.
 --}}
 <dialog id="modal-utama" class="dialog-panel backdrop:bg-slate-900/40" aria-labelledby="modal-judul">
-    <div id="modal-isi" class="max-h-[85vh] overflow-y-auto">
+    <div id="modal-isi" class="max-h-[85vh] overflow-y-auto overscroll-contain">
         {{-- diisi htmx --}}
     </div>
 </dialog>

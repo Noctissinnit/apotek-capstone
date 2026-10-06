@@ -11,7 +11,12 @@ class KategoriController extends Controller
 {
     public function index(): View
     {
-        return view('admin.kategori.index', ['kategori' => Kategori::withCount('obat')->orderBy('nama_kategori')->get()]);
+        return view('admin.kategori.index', [
+            'kategori' => Kategori::withCount('obat')
+                ->orderBy('nama_kategori')
+                ->paginate(10)
+                ->withQueryString(),
+        ]);
     }
 
     public function create(): View

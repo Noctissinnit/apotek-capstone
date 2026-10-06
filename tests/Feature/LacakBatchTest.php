@@ -46,6 +46,33 @@ class LacakBatchTest extends TestCase
         ]);
     }
 
+    public function test_daftar_batch_dibagi_per_halaman_dan_saringan_ikut_terbawa(): void
+    {
+        $admin = $this->admin();
+        $obat = $this->obat();
+
+        // tanggal makin jauh agar urutan kadaluarsanya pasti: BT-01 paling dekat
+        foreach (range(1, 12) as $nomor) {
+            $obat->batch()->create([
+                'no_batch' => sprintf('BT-%02d', $nomor),
+                'tanggal_kadaluarsa' => now()->addDays(30 + $nomor)->toDateString(),
+                'stok' => 5,
+            ]);
+        }
+
+        $this->actingAs($admin)->get(route('batch.index'))
+            ->assertOk()
+            ->assertSee('BT-10')
+            ->assertDontSee('BT-11');
+
+        $this->actingAs($admin)->get(route('batch.index', ['status' => 'siap', 'page' => 2]))
+            ->assertOk()
+            ->assertSee('BT-11')
+            ->assertSee('BT-12')
+            ->assertDontSee('BT-01')
+            ->assertSee('status=siap', false);
+    }
+
     public function test_daftar_batch_bisa_dicari_dan_disaring(): void
     {
         $admin = $this->admin();

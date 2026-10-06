@@ -48,6 +48,27 @@ class KategoriTest extends TestCase
         $this->assertDatabaseMissing('kategori', ['id_kategori' => $kategori->id_kategori]);
     }
 
+    public function test_daftar_kategori_dibagi_per_halaman(): void
+    {
+        $admin = User::factory()->create()->assignRole('admin_apotek_a');
+
+        // nama diberi nomor dua digit agar urutan abjadnya pasti
+        foreach (range(1, 12) as $nomor) {
+            Kategori::create(['nama_kategori' => sprintf('Kategori %02d', $nomor)]);
+        }
+
+        $this->actingAs($admin)->get(route('kategori.index'))
+            ->assertOk()
+            ->assertSee('Kategori 10')
+            ->assertDontSee('Kategori 11');
+
+        $this->actingAs($admin)->get(route('kategori.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Kategori 11')
+            ->assertSee('Kategori 12')
+            ->assertDontSee('Kategori 01');
+    }
+
     public function test_kategori_yang_digunakan_obat_tidak_dapat_dihapus(): void
     {
         $admin = User::factory()->create()->assignRole('admin_apotek_a');

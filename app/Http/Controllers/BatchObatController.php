@@ -32,7 +32,7 @@ class BatchObatController extends Controller
             ->when($status === 'siap', fn ($query) => $query->siapDijual())
             ->orderByRaw('tanggal_kadaluarsa is null')
             ->orderBy('tanggal_kadaluarsa')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         return view('admin.batch.index', compact('batch', 'cari', 'status'));

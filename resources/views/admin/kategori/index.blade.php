@@ -33,5 +33,8 @@
             @endforelse
         </tbody>
     </table>
+    @if ($kategori->hasPages())
+    <div class="border-t border-slate-200 px-5 py-4">{{ $kategori->links() }}</div>
+    @endif
 </div>
 @endsection

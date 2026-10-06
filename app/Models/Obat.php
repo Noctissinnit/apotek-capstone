@@ -117,6 +117,50 @@ class Obat extends Model
         return $query->whereColumn('stok', '<=', 'stok_minimum');
     }
 
+    /**
+     * Obat hanya boleh dibuka user dari apotek yang sama. Obat lama tanpa
+     * apotek masih boleh dibuka admin, sama seperti aturan scopeForUser.
+     */
+    public function bolehDiaksesOleh(User $user): bool
+    {
+        return $this->apotek === $user->apotek
+            || ($this->apotek === null && $user->isAdmin());
+    }
+
+    /** Kolom yang boleh dipakai mengurutkan daftar obat, kunci = nama di URL. */
+    public const KOLOM_URUT = [
+        'kode' => 'kode_obat',
+        'nama' => 'nama_obat',
+        'stok' => 'stok',
+        'kategori' => 'kategori.nama_kategori',
+        'satuan' => 'satuan',
+        'harga_jual' => 'harga_jual',
+    ];
+
+    /**
+     * Pencarian, saringan, dan urutan daftar obat.
+     * Dipakai bersama halaman Data Obat dan API, supaya hasilnya selalu sama.
+     *
+     * @param  array{search?: ?string, kategori_id?: mixed, satuan?: ?string, sort?: string, direction?: string}  $saringan
+     */
+    public function scopeSaring(Builder $query, array $saringan): Builder
+    {
+        $cari = trim((string) ($saringan['search'] ?? ''));
+        $urut = $saringan['sort'] ?? 'kode';
+        $arah = $saringan['direction'] ?? 'asc';
+
+        return $query
+            ->when(filled($saringan['kategori_id'] ?? null), fn ($query) => $query->where('obat.kategori_id', (int) $saringan['kategori_id']))
+            ->when(filled($saringan['satuan'] ?? null), fn ($query) => $query->where('satuan', $saringan['satuan']))
+            ->when($cari !== '', fn ($query) => $query->where(function ($query) use ($cari) {
+                $query->where('kode_obat', 'like', "%{$cari}%")
+                    ->orWhere('nama_obat', 'like', "%{$cari}%")
+                    ->orWhereHas('kategoriRelasi', fn ($query) => $query->where('nama_kategori', 'like', "%{$cari}%"));
+            }))
+            ->when($urut === 'kategori', fn ($query) => $query->leftJoin('kategori', 'obat.kategori_id', '=', 'kategori.id_kategori')->select('obat.*'))
+            ->orderBy(self::KOLOM_URUT[$urut] ?? self::KOLOM_URUT['kode'], $arah === 'desc' ? 'desc' : 'asc');
+    }
+
     public function scopeForUser(Builder $query, User $user): Builder
     {
         return $query->where(function (Builder $query) use ($user) {

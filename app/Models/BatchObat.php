@@ -101,6 +101,28 @@ class BatchObat extends Model
         return $masuk->concat($terjual)->concat($keluarLain)->sortBy('tanggal')->values();
     }
 
+    /**
+     * Riwayat beserta jumlahnya: total masuk, total keluar, dan stok awal.
+     *
+     * Batch hasil migrasi data lama bisa tidak punya catatan barang masuk.
+     * Selisihnya ditampilkan sebagai stok awal supaya angkanya tetap jujur.
+     *
+     * @return array{riwayat: \Illuminate\Support\Collection<int, array<string, mixed>>, total_masuk: int, total_keluar: int, stok_awal: int}
+     */
+    public function ringkasanRiwayat(): array
+    {
+        $riwayat = $this->riwayat();
+        $totalMasuk = (int) $riwayat->where('jumlah', '>', 0)->sum('jumlah');
+        $totalKeluar = (int) abs($riwayat->where('jumlah', '<', 0)->sum('jumlah'));
+
+        return [
+            'riwayat' => $riwayat,
+            'total_masuk' => $totalMasuk,
+            'total_keluar' => $totalKeluar,
+            'stok_awal' => $this->stok + $totalKeluar - $totalMasuk,
+        ];
+    }
+
     public function sudahKadaluarsa(): bool
     {
         return $this->tanggal_kadaluarsa !== null && $this->tanggal_kadaluarsa->isPast();
@@ -175,6 +197,35 @@ class BatchObat extends Model
         return $query->where('stok', '>', 0)
             ->whereNotNull('tanggal_kadaluarsa')
             ->whereDate('tanggal_kadaluarsa', '<', now()->toDateString());
+    }
+
+    /** Pilihan saringan status di daftar batch. */
+    public const SARINGAN_STATUS = ['siap', 'kadaluarsa', 'ditahan', 'habis'];
+
+    /**
+     * Pencarian dan saringan daftar batch, urut dari yang paling dekat kadaluarsa.
+     * Dipakai bersama halaman Lacak Batch dan API.
+     *
+     * @param  Builder<BatchObat>  $query
+     * @return Builder<BatchObat>
+     */
+    public function scopeSaring(Builder $query, string $cari = '', string $status = ''): Builder
+    {
+        $cari = trim($cari);
+
+        return $query
+            ->when($cari !== '', fn ($query) => $query->where(function ($query) use ($cari) {
+                $query->where('no_batch', 'like', "%{$cari}%")
+                    ->orWhereHas('obat', fn ($obat) => $obat
+                        ->where('nama_obat', 'like', "%{$cari}%")
+                        ->orWhere('kode_obat', 'like', "%{$cari}%"));
+            }))
+            ->when($status === 'kadaluarsa', fn ($query) => $query->kadaluarsa())
+            ->when($status === 'ditahan', fn ($query) => $query->where('status', self::STATUS_DITAHAN))
+            ->when($status === 'habis', fn ($query) => $query->where('stok', 0))
+            ->when($status === 'siap', fn ($query) => $query->siapDijual())
+            ->orderByRaw('tanggal_kadaluarsa is null')
+            ->orderBy('tanggal_kadaluarsa');
     }
 
     /**

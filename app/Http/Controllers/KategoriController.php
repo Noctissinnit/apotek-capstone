@@ -9,10 +9,11 @@ use Illuminate\View\View;
 
 class KategoriController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         return view('admin.kategori.index', [
-            'kategori' => Kategori::withCount('obat')
+            // kategori dipakai bersama, tapi jumlah obatnya hanya milik apotek sendiri
+            'kategori' => Kategori::withCount(['obat' => fn ($query) => $query->forUser($request->user())])
                 ->orderBy('nama_kategori')
                 ->paginate(10)
                 ->withQueryString(),
@@ -57,7 +58,7 @@ class KategoriController extends Controller
     private function validatedData(Request $request, ?Kategori $kategori = null): array
     {
         return $request->validate([
-            'nama_kategori' => ['required', 'string', 'max:50', 'unique:kategori,nama_kategori,' . ($kategori?->id_kategori ?? 'NULL') . ',id_kategori'],
+            'nama_kategori' => ['required', 'string', 'max:50', 'unique:kategori,nama_kategori,'.($kategori?->id_kategori ?? 'NULL').',id_kategori'],
         ]);
     }
 }

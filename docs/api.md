@@ -46,6 +46,64 @@ const { data } = await api.post('/api/v1/login', { email, password });
 | POST | `/api/v1/login` | umum | Membalas data user (bentuk sama dengan `/me`) |
 | POST | `/api/v1/logout` | login | |
 | GET | `/api/v1/me` | login | User yang sedang login |
+| GET | `/api/v1/referensi` | login | Pilihan tetap: satuan, urutan obat, status batch, metode pembayaran, ambang kadaluarsa |
+| GET | `/api/v1/obat` | `obat.lihat` | Daftar obat (dibagi per halaman) |
+| GET | `/api/v1/obat/{id}` | `obat.lihat` | Satu obat beserta seluruh batch-nya, `meta.stok_siap_dijual` |
+| GET | `/api/v1/kategori` | `obat.lihat` | Semua kategori + `jumlah_obat` milik apotek sendiri (tanpa pagination) |
+| GET | `/api/v1/batch` | `obat.lihat` | Daftar batch, urut dari yang paling dekat kadaluarsa |
+| GET | `/api/v1/batch/{id}` | `obat.lihat` | Satu batch + `riwayat` keluar masuk + `meta` (stok awal, total masuk/keluar) |
+| GET | `/api/v1/dashboard/admin` | role admin | Ringkasan dashboard admin |
+| GET | `/api/v1/dashboard/kasir` | role kasir | Ringkasan dashboard kasir |
+| GET | `/api/v1/monitoring` | role kasir | Stok menipis dan batch per tingkat peringatan kadaluarsa |
+
+Semua data otomatis dibatasi pada apotek user yang login. Obat atau batch milik
+apotek lain dibalas 404.
+
+### Parameter daftar
+
+`/api/v1/obat`
+
+| Parameter | Isi |
+|---|---|
+| `search` | Cari di kode, nama, atau nama kategori |
+| `kategori_id` | Id kategori |
+| `satuan` | Salah satu dari `referensi.satuan` |
+| `sort` | `kode` (bawaan), `nama`, `stok`, `kategori`, `satuan`, `harga_jual` |
+| `direction` | `asc` (bawaan) atau `desc` |
+| `page`, `per_page` | Halaman dan jumlah per halaman (bawaan 10, maksimal 100) |
+
+`/api/v1/batch`
+
+| Parameter | Isi |
+|---|---|
+| `cari` | Cari di nomor batch, nama, atau kode obat |
+| `status` | `siap`, `kadaluarsa`, `ditahan`, atau `habis` |
+| `page`, `per_page` | Sama seperti di atas |
+
+Nilai yang tidak dikenal (misalnya `sort=harga_beli`) dibalas 422, bukan diabaikan.
+
+Daftar yang dibagi per halaman memakai bentuk bawaan Laravel:
+
+```json
+{
+  "data": [ ... ],
+  "links": { "first": "...", "last": "...", "prev": null, "next": "..." },
+  "meta": { "current_page": 1, "last_page": 2, "per_page": 10, "total": 13 }
+}
+```
+
+### Data yang hanya untuk pengelola
+
+`harga_beli` (obat) dan `modal_per_satuan` (batch) hanya dikirim kepada user dengan
+izin `obat.kelola` (admin). Untuk kasir, kedua kolom itu tidak ada sama sekali di JSON.
+
+### Kolom batch yang membantu tampilan
+
+| Kolom | Isi |
+|---|---|
+| `sisa_hari` | Hari menuju kadaluarsa, minus berarti sudah lewat, `null` bila tanpa tanggal |
+| `tingkat_kadaluarsa` | `kadaluarsa`, `segera_habis`, `siapkan_retur`, atau `aman` |
+| `boleh_dijual` | `true` bila aktif, stoknya ada, dan belum kadaluarsa |
 
 Contoh balasan `/me`:
 

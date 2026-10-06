@@ -18,14 +18,6 @@ class ObatController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        $sortableColumns = [
-            'kode' => 'kode_obat',
-            'nama' => 'nama_obat',
-            'stok' => 'stok',
-            'kategori' => 'kategori.nama_kategori',
-            'satuan' => 'satuan',
-            'harga_jual' => 'harga_jual',
-        ];
         $sortOption = $request->string('sort_option')->toString();
         $sort = $request->string('sort_by')->toString() ?: $request->string('sort')->toString();
         $direction = $request->string('direction')->lower()->toString();
@@ -34,25 +26,19 @@ class ObatController extends Controller
             [$sort, $direction] = array_pad(explode('|', $sortOption, 2), 2, 'asc');
         }
 
-        $sort = array_key_exists($sort, $sortableColumns) ? $sort : 'kode';
+        $sort = array_key_exists($sort, Obat::KOLOM_URUT) ? $sort : 'kode';
         $direction = $direction === 'desc' ? 'desc' : 'asc';
 
         $obat = Obat::query()
             ->forUser($user)
             ->with('kategoriRelasi')
-            ->when($request->filled('kategori_id'), fn($query) => $query->where('obat.kategori_id', $request->integer('kategori_id')))
-            ->when($request->filled('satuan'), fn($query) => $query->where('satuan', $request->string('satuan')->toString()))
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->string('search')->trim();
-
-                $query->where(function ($query) use ($search) {
-                    $query->where('kode_obat', 'like', "%{$search}%")
-                        ->orWhere('nama_obat', 'like', "%{$search}%")
-                        ->orWhereHas('kategoriRelasi', fn($query) => $query->where('nama_kategori', 'like', "%{$search}%"));
-                });
-            })
-            ->when($sort === 'kategori', fn($query) => $query->leftJoin('kategori', 'obat.kategori_id', '=', 'kategori.id_kategori')->select('obat.*'))
-            ->orderBy($sortableColumns[$sort], $direction)
+            ->saring([
+                'search' => $request->string('search')->toString(),
+                'kategori_id' => $request->input('kategori_id'),
+                'satuan' => $request->string('satuan')->toString(),
+                'sort' => $sort,
+                'direction' => $direction,
+            ])
             ->paginate(10)
             ->withQueryString();
 
@@ -239,9 +225,6 @@ class ObatController extends Controller
 
     private function ensureSameApotek(Obat $obat): void
     {
-        $user = request()->user();
-        $isLegacyAdminRecord = $obat->apotek === null && $user->isAdmin();
-
-        abort_unless($obat->apotek === $user->apotek || $isLegacyAdminRecord, 404);
+        abort_unless($obat->bolehDiaksesOleh(request()->user()), 404);
     }
 }

@@ -30,6 +30,8 @@ class ObatResource extends JsonResource
             'stok' => $this->stok,
             'stok_minimum' => $this->stok_minimum,
             'stok_menipis' => $this->stok <= $this->stok_minimum,
+            // stok yang benar-benar bisa dimasukkan ke keranjang: tanpa batch kadaluarsa atau ditahan
+            'stok_siap_dijual' => $this->whenHas('stok_siap_dijual', fn ($nilai) => (int) $nilai),
             'tanggal_kadaluarsa' => $this->tanggal_kadaluarsa?->toDateString(),
             'keterangan' => $this->keterangan,
             'batch' => BatchObatResource::collection($this->whenLoaded('batch')),

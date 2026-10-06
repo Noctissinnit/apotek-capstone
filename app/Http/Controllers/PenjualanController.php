@@ -14,16 +14,17 @@ class PenjualanController extends Controller
     public function index(Request $request): View
     {
         $hariIni = CarbonImmutable::today();
-        $milikApotek = fn () => Penjualan::query()->forUser($request->user());
+        $ringkasan = Penjualan::ringkasanHariIni($request->user());
 
         return view('kasir.riwayat.index', [
-            'riwayat' => $milikApotek()
+            'riwayat' => Penjualan::query()
+                ->forUser($request->user())
                 ->with(['user', 'detail.obat'])
                 ->orderByDesc('tanggal_penjualan')
                 ->paginate(5)
                 ->withQueryString(),
-            'totalHariIni' => $milikApotek()->whereDate('tanggal_penjualan', $hariIni->toDateString())->sum('total'),
-            'jumlahHariIni' => $milikApotek()->whereDate('tanggal_penjualan', $hariIni->toDateString())->count(),
+            'totalHariIni' => $ringkasan['total'],
+            'jumlahHariIni' => $ringkasan['jumlah'],
             'tanggalAwalLaporan' => $hariIni->toDateString(),
             'tanggalAkhirLaporan' => $hariIni->toDateString(),
         ]);

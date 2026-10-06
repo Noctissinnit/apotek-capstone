@@ -58,4 +58,19 @@ class Penjualan extends Model
     {
         return $query->where($query->getModel()->getTable().'.apotek', $user->apotek);
     }
+
+    /**
+     * Jumlah transaksi dan total penjualan apotek user pada hari ini.
+     *
+     * @return array{jumlah: int, total: float}
+     */
+    public static function ringkasanHariIni(User $user): array
+    {
+        $hariIni = self::query()->forUser($user)->whereDate('tanggal_penjualan', today()->toDateString());
+
+        return [
+            'jumlah' => (clone $hariIni)->count(),
+            'total' => (float) (clone $hariIni)->sum('total'),
+        ];
+    }
 }

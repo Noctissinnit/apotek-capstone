@@ -96,7 +96,16 @@ class Obat extends Model
      */
     public function stokSiapDijual(): int
     {
-        return (int) $this->batch()->siapDijual()->sum('stok');
+        return (int) $this->batch()->bolehDijual()->sum('stok');
+    }
+
+    /**
+     * Sertakan stok siap jual sebagai kolom stok_siap_dijual dalam satu query,
+     * supaya daftar obat tidak menghitungnya satu per satu.
+     */
+    public function scopeDenganStokSiapDijual(Builder $query): Builder
+    {
+        return $query->withSum(['batch as stok_siap_dijual' => fn ($batch) => $batch->bolehDijual()], 'stok');
     }
 
     /**

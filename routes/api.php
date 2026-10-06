@@ -3,12 +3,15 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BatchObatController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\KasirController;
 use App\Http\Controllers\Api\V1\KategoriController;
 use App\Http\Controllers\Api\V1\ObatController;
 use App\Http\Controllers\Api\V1\PembelianController;
 use App\Http\Controllers\Api\V1\PenyesuaianStokController;
 use App\Http\Controllers\Api\V1\ReferensiController;
+use App\Http\Controllers\Api\V1\RiwayatPenjualanController;
 use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\PenyesuaianStokController as WebPenyesuaianStokController;
 use Illuminate\Support\Facades\Route;
 
@@ -77,6 +80,22 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('role:kasir_apotek_a|kasir_apotek_b')->group(function () {
             Route::get('/dashboard/kasir', [DashboardController::class, 'kasir'])->name('dashboard.kasir');
             Route::get('/monitoring', [DashboardController::class, 'monitoring'])->name('monitoring');
+
+            // Meja kasir. Cari obat lewat GET /obat (sudah berisi stok_siap_dijual).
+            Route::prefix('kasir')->name('kasir.')->group(function () {
+                Route::get('/keranjang', [KasirController::class, 'keranjang'])->name('keranjang');
+                Route::post('/keranjang', [KasirController::class, 'tambah'])->name('keranjang.tambah');
+                Route::delete('/keranjang', [KasirController::class, 'kosongkan'])->name('keranjang.kosongkan');
+                Route::put('/keranjang/{obat}', [KasirController::class, 'atur'])->whereNumber('obat')->name('keranjang.atur');
+                Route::delete('/keranjang/{obat}', [KasirController::class, 'hapus'])->whereNumber('obat')->name('keranjang.hapus');
+                Route::post('/checkout', [KasirController::class, 'checkout'])->name('checkout');
+
+                Route::get('/riwayat', [RiwayatPenjualanController::class, 'index'])->name('riwayat.index');
+                // berkas PDF-nya sama persis dengan yang diunduh dari halaman web
+                Route::get('/riwayat/laporan/pdf', [PenjualanController::class, 'exportRentangPdf'])->name('laporan.pdf');
+                Route::get('/riwayat/{penjualan}', [RiwayatPenjualanController::class, 'show'])->name('riwayat.show');
+                Route::get('/riwayat/{penjualan}/pdf', [PenjualanController::class, 'exportPdf'])->name('riwayat.pdf');
+            });
         });
     });
 });

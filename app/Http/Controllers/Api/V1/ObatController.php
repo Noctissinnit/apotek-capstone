@@ -33,6 +33,8 @@ class ObatController extends Controller
             ->forUser($request->user())
             ->with('kategoriRelasi')
             ->saring($saringan)
+            // setelah saring(): urut per kategori memakai select('obat.*') yang menimpa kolom tambahan
+            ->denganStokSiapDijual()
             ->paginate($saringan['per_page'] ?? 10)
             ->withQueryString();
 

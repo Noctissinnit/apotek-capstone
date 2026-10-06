@@ -2,37 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DetailPenjualan;
+use App\Actions\ProsesCheckout;
 use App\Models\Obat;
-use App\Models\PemakaianBatch;
-use App\Models\Penjualan;
-use App\Models\User;
-use App\Support\QrisDinamis;
+use App\Support\Keranjang;
+use App\Support\Rupiah;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use InvalidArgumentException;
 
+/**
+ * Layar kasir. Isi keranjang diurus App\Support\Keranjang dan pembayarannya
+ * oleh App\Actions\ProsesCheckout, keduanya dipakai bersama API.
+ */
 class KasirTransaksiController extends Controller
 {
-    /**
-     * Cara pembayaran yang dilayani di meja kasir. Semuanya dibayar langsung di tempat:
-     * QRIS lewat stiker QR milik apotek, kartu debit lewat mesin EDC bank.
-     * Sistem hanya mencatat, tidak memproses pembayaran.
-     */
-    public const TUNAI = 'Tunai';
-
-    public const METODE_PEMBAYARAN = [self::TUNAI, 'QRIS', 'Transfer/Debit'];
+    public function __construct(private Keranjang $keranjang) {}
 
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('q', ''));
-        $cart = $this->currentCart();
-        $items = $this->cartItems($request->user());
+        $items = $this->keranjang->rincian($request->user());
 
         return view('kasir.transaksi.index', [
             'obat' => Obat::query()
@@ -43,23 +33,23 @@ class KasirTransaksiController extends Controller
                 ->orderBy('nama_obat')
                 ->get(),
             'search' => $search,
-            'jumlahKeranjang' => array_sum($cart),
-            'jumlahPerObat' => $cart,
+            'jumlahKeranjang' => array_sum($this->keranjang->isi()),
+            'jumlahPerObat' => $this->keranjang->isi(),
             'items' => $items,
-            'subtotal' => $items->sum(fn (array $item) => $item['subtotal_cents']),
-            'qris' => $this->qrisUntukKeranjang($request->user(), $items),
+            'subtotal' => $items->sum('subtotal_cents'),
+            'qris' => $this->keranjang->qris($request->user(), $items),
         ]);
     }
 
     public function cart(Request $request): View
     {
-        $items = $this->cartItems($request->user());
+        $items = $this->keranjang->rincian($request->user());
 
         return view('kasir.keranjang.index', [
             'items' => $items,
-            'subtotal' => $items->sum(fn (array $item) => $item['subtotal_cents']),
+            'subtotal' => $items->sum('subtotal_cents'),
             'jumlahItem' => $items->sum('jumlah'),
-            'qris' => $this->qrisUntukKeranjang($request->user(), $items),
+            'qris' => $this->keranjang->qris($request->user(), $items),
         ]);
     }
 
@@ -70,271 +60,48 @@ class KasirTransaksiController extends Controller
             'jumlah' => ['nullable', 'integer', 'min:1', 'max:9999'],
         ]);
 
-        // Obat milik apotek lain tidak boleh masuk keranjang
-        $obat = Obat::query()->forUser($request->user())->findOrFail($data['obat_id']);
-        $cart = $this->currentCart();
-        $quantity = ($cart[$obat->id] ?? 0) + ($data['jumlah'] ?? 1);
-
-        // yang dihitung adalah stok yang boleh dijual, bukan seluruh stok:
-        // batch kadaluarsa atau yang sedang ditahan tidak ikut
-        $tersedia = $obat->stokSiapDijual();
-
-        if ($tersedia < $quantity) {
-            return back()->with('error', "Stok {$obat->nama_obat} tidak mencukupi. Siap dijual: {$tersedia} {$obat->satuan}.");
+        try {
+            $obat = $this->keranjang->tambah($request->user(), $data['obat_id'], $data['jumlah'] ?? 1);
+        } catch (ValidationException $e) {
+            return back()->with('error', $e->validator->errors()->first());
         }
-
-        $cart[$obat->id] = $quantity;
-        $request->session()->put('kasir.cart', $cart);
 
         return back()->with('success', "{$obat->nama_obat} ditambahkan ke keranjang.");
     }
 
-    public function remove(Request $request, Obat $obat): RedirectResponse
+    public function remove(Obat $obat): RedirectResponse
     {
-        $cart = $this->currentCart();
-        unset($cart[$obat->id]);
-        $request->session()->put('kasir.cart', $cart);
+        $this->keranjang->hapus($obat->id);
 
         return back()->with('success', 'Obat dihapus dari keranjang.');
     }
 
-    public function checkout(Request $request): RedirectResponse
+    public function checkout(Request $request, ProsesCheckout $proses): RedirectResponse
     {
-        $cart = $this->currentCart();
+        $keranjang = $this->keranjang->isi();
 
-        if ($cart === []) {
+        if ($keranjang === []) {
             return redirect()->route('kasir.keranjang')->with('error', 'Keranjang masih kosong.');
         }
 
-        $data = $request->validate([
-            'metode_pembayaran' => ['required', Rule::in(self::METODE_PEMBAYARAN)],
-            // hanya relevan untuk tunai; QRIS dan Transfer/Debit selalu pas
-            'uang_diterima' => [
-                Rule::requiredIf($request->input('metode_pembayaran') === self::TUNAI),
-                'nullable', 'numeric', 'min:0',
-            ],
-            // bukti pembayaran non-tunai, boleh dikosongkan
-            'no_referensi' => ['nullable', 'string', 'max:50'],
-        ], [
-            'uang_diterima.required' => 'Isi dulu uang yang diterima dari pembeli.',
-        ]);
+        $data = $request->validate(ProsesCheckout::aturan(), ProsesCheckout::pesan());
 
-        $penjualan = DB::transaction(function () use ($cart, $request, $data): Penjualan {
-            // Penyaringan apotek diulang di sini, bukan hanya saat menampilkan daftar,
-            // supaya keranjang yang sudah telanjur berisi obat apotek lain tetap ditolak
-            $obatList = Obat::query()
-                ->forUser($request->user())
-                ->whereIn('id', array_keys($cart))
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('id');
+        $penjualan = $proses($request->user(), $keranjang, $data);
 
-            $totalCents = 0;
-            foreach ($cart as $obatId => $jumlah) {
-                $obat = $obatList->get($obatId);
-                if (! $obat) {
-                    throw ValidationException::withMessages([
-                        'keranjang' => 'Ada obat di keranjang yang bukan milik apotek Anda. Kosongkan keranjang lalu ulangi.',
-                    ]);
-                }
+        $this->keranjang->kosongkan();
 
-                if ($obat->stokSiapDijual() < $jumlah) {
-                    throw ValidationException::withMessages([
-                        'keranjang' => 'Stok salah satu obat berubah atau tidak mencukupi. Periksa kembali keranjang.',
-                    ]);
-                }
-
-                $totalCents += $this->toCents((string) $obat->harga_jual) * $jumlah;
-            }
-
-            // uang pembeli dicatat hanya untuk tunai, berikut kembaliannya
-            $uangDiterimaCents = null;
-            $kembalianCents = null;
-
-            if ($data['metode_pembayaran'] === self::TUNAI) {
-                $uangDiterimaCents = $this->toCents(number_format((float) $data['uang_diterima'], 2, '.', ''));
-
-                if ($uangDiterimaCents < $totalCents) {
-                    throw ValidationException::withMessages([
-                        'uang_diterima' => 'Uang yang diterima kurang dari total belanja Rp '
-                            .number_format($totalCents / 100, 0, ',', '.').'.',
-                    ]);
-                }
-
-                $kembalianCents = $uangDiterimaCents - $totalCents;
-            }
-
-            $penjualan = Penjualan::create([
-                'no_faktur' => 'TRX-'.now()->format('Ymd-His').'-'.Str::upper(Str::random(5)),
-                'user_id' => $request->user()->id,
-                'apotek' => $request->user()->apotek,
-                'tanggal_penjualan' => now(),
-                'total' => $this->fromCents($totalCents),
-                'uang_diterima' => $uangDiterimaCents === null ? null : $this->fromCents($uangDiterimaCents),
-                'kembalian' => $kembalianCents === null ? null : $this->fromCents($kembalianCents),
-                'metode_pembayaran' => $data['metode_pembayaran'],
-                // tunai tidak punya nomor bukti
-                'no_referensi' => $data['metode_pembayaran'] === self::TUNAI ? null : ($data['no_referensi'] ?? null),
-            ]);
-
-            foreach ($cart as $obatId => $jumlah) {
-                $obat = $obatList->get($obatId);
-                $unitCents = $this->toCents((string) $obat->harga_jual);
-
-                $detail = DetailPenjualan::create([
-                    'penjualan_id' => $penjualan->id,
-                    'obat_id' => $obat->id,
-                    'jumlah' => $jumlah,
-                    'harga_jual' => $obat->harga_jual,
-                    'subtotal' => $this->fromCents($unitCents * $jumlah),
-                ]);
-
-                $this->ambilDariBatch($detail, $obat, $jumlah);
-                $obat->decrement('stok', $jumlah);
-            }
-
-            return $penjualan;
-        });
-
-        $request->session()->forget('kasir.cart');
+        $rupiah = fn ($nilai) => $nilai === null ? null : Rupiah::tampil(Rupiah::keSen((string) $nilai));
 
         // Dipakai layout untuk menampilkan notifikasi besar setelah pembayaran
         return redirect()->route('kasir.keranjang')->with('transaksi_sukses', [
             'no_faktur' => $penjualan->no_faktur,
-            'total' => 'Rp '.number_format((float) $penjualan->total, 0, ',', '.'),
+            'total' => $rupiah($penjualan->total),
             'metode_pembayaran' => $penjualan->metode_pembayaran,
-            'uang_diterima' => $penjualan->uang_diterima === null ? null : 'Rp '.number_format((float) $penjualan->uang_diterima, 0, ',', '.'),
-            'kembalian' => $penjualan->kembalian === null ? null : 'Rp '.number_format((float) $penjualan->kembalian, 0, ',', '.'),
-            'jumlah_item' => array_sum($cart),
+            'uang_diterima' => $rupiah($penjualan->uang_diterima),
+            'kembalian' => $rupiah($penjualan->kembalian),
+            'jumlah_item' => array_sum($keranjang),
             'url_struk' => route('kasir.riwayat.pdf', $penjualan),
             'url_transaksi_baru' => route('kasir.transaksi'),
         ]);
-    }
-
-    /**
-     * Siapkan kode QR berisi nominal belanja, supaya pembeli tinggal memindai.
-     * Mengembalikan null bila keranjang kosong, lalu status 'belum_diatur'
-     * bila kode QRIS apotek belum diisi di berkas .env.
-     *
-     * @param  \Illuminate\Support\Collection<int, array<string, mixed>>  $items
-     * @return array<string, mixed>|null
-     */
-    private function qrisUntukKeranjang(User $user, $items): ?array
-    {
-        $nominal = (int) round($items->sum(fn (array $item) => $item['subtotal_cents']) / 100);
-
-        if ($nominal < 1) {
-            return null;
-        }
-
-        $kodeStatis = (string) (config('apotek.qris.'.$user->apotek) ?? '');
-
-        if (trim($kodeStatis) === '') {
-            return ['status' => 'belum_diatur', 'nominal' => $nominal];
-        }
-
-        $qris = new QrisDinamis;
-
-        try {
-            return [
-                'status' => 'siap',
-                'nominal' => $nominal,
-                'svg' => $qris->gambarSvg($qris->dariStatis($kodeStatis, $nominal)),
-            ];
-        } catch (InvalidArgumentException $e) {
-            // kode QRIS salah salin, jangan sampai menghalangi penjualan
-            report($e);
-
-            return ['status' => 'tidak_terbaca', 'nominal' => $nominal];
-        }
-    }
-
-    /**
-     * Kurangi stok dari batch yang paling dekat kadaluarsa lebih dulu.
-     * Kalau batch terdepan tidak cukup, sisanya diambil dari batch berikutnya.
-     * Kasir tidak memilih apa pun, ini berjalan sendiri saat pembayaran.
-     */
-    private function ambilDariBatch(DetailPenjualan $detail, Obat $obat, int $jumlah): void
-    {
-        $sisa = $jumlah;
-
-        $daftarBatch = $obat->batch()
-            ->siapDijual()
-            ->lockForUpdate()
-            ->get();
-
-        foreach ($daftarBatch as $batch) {
-            if ($sisa < 1) {
-                break;
-            }
-
-            $diambil = min($sisa, $batch->stok);
-
-            PemakaianBatch::create([
-                'detail_penjualan_id' => $detail->id,
-                'batch_obat_id' => $batch->id,
-                'jumlah' => $diambil,
-                'modal_per_satuan' => $batch->modal_per_satuan,
-            ]);
-
-            $batch->decrement('stok', $diambil);
-            $sisa -= $diambil;
-        }
-
-        if ($sisa > 0) {
-            // tidak seharusnya terjadi karena sudah diperiksa sebelumnya,
-            // tetapi kalau sampai terjadi, seluruh transaksi dibatalkan
-            throw ValidationException::withMessages([
-                'keranjang' => "Stok {$obat->nama_obat} di catatan batch tidak mencukupi. Periksa data batch obat ini.",
-            ]);
-        }
-    }
-
-    /** @return array<int, int> */
-    private function currentCart(): array
-    {
-        return collect(session('kasir.cart', []))
-            ->mapWithKeys(fn ($quantity, $id) => [(int) $id => (int) $quantity])
-            ->all();
-    }
-
-    /** @return \Illuminate\Support\Collection<int, array<string, mixed>> */
-    private function cartItems(User $user)
-    {
-        $cart = $this->currentCart();
-        $obatList = Obat::query()
-            ->forUser($user)
-            ->whereIn('id', array_keys($cart))
-            ->get()
-            ->keyBy('id');
-
-        return collect($cart)->map(function (int $quantity, int $id) use ($obatList): array {
-            $obat = $obatList->get($id);
-            if (! $obat) {
-                return null;
-            }
-
-            $unitCents = $this->toCents((string) $obat->harga_jual);
-
-            return [
-                'obat' => $obat,
-                'jumlah' => $quantity,
-                'harga_cents' => $unitCents,
-                'subtotal_cents' => $unitCents * $quantity,
-            ];
-        })->filter()->values();
-    }
-
-    private function toCents(string $amount): int
-    {
-        [$whole, $fraction] = array_pad(explode('.', $amount, 2), 2, '');
-
-        return ((int) $whole * 100) + (int) str_pad(substr($fraction, 0, 2), 2, '0');
-    }
-
-    private function fromCents(int $amount): string
-    {
-        return number_format($amount / 100, 2, '.', '');
     }
 }

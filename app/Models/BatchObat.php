@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class BatchObat extends Model
 {
@@ -66,9 +67,9 @@ class BatchObat extends Model
      * Riwayat keluar masuk batch ini, diurutkan dari yang paling lama.
      * Dipakai halaman penelusuran untuk menunjukkan asal dan tujuan barang.
      *
-     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     * @return Collection<int, array<string, mixed>>
      */
-    public function riwayat(): \Illuminate\Support\Collection
+    public function riwayat(): Collection
     {
         $masuk = $this->barangMasuk()->with('pembelian.supplier')->get()->map(fn (DetailPembelian $baris) => [
             'tanggal' => $baris->pembelian?->tanggal_pembelian ?? $baris->created_at,
@@ -107,7 +108,7 @@ class BatchObat extends Model
      * Batch hasil migrasi data lama bisa tidak punya catatan barang masuk.
      * Selisihnya ditampilkan sebagai stok awal supaya angkanya tetap jujur.
      *
-     * @return array{riwayat: \Illuminate\Support\Collection<int, array<string, mixed>>, total_masuk: int, total_keluar: int, stok_awal: int}
+     * @return array{riwayat: Collection<int, array<string, mixed>>, total_masuk: int, total_keluar: int, stok_awal: int}
      */
     public function ringkasanRiwayat(): array
     {
@@ -168,6 +169,23 @@ class BatchObat extends Model
     }
 
     /**
+     * Batch yang boleh dijual, tanpa urutan. Dipakai juga di dalam subquery
+     * penjumlahan stok, yang tidak boleh berisi ORDER BY.
+     *
+     * @param  Builder<BatchObat>  $query
+     * @return Builder<BatchObat>
+     */
+    public function scopeBolehDijual(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_AKTIF)
+            ->where('stok', '>', 0)
+            ->where(function (Builder $query) {
+                $query->whereNull('tanggal_kadaluarsa')
+                    ->orWhereDate('tanggal_kadaluarsa', '>=', now()->toDateString());
+            });
+    }
+
+    /**
      * Batch yang siap dijual, diurutkan dari yang paling dekat kadaluarsa.
      *
      * @param  Builder<BatchObat>  $query
@@ -175,12 +193,7 @@ class BatchObat extends Model
      */
     public function scopeSiapDijual(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_AKTIF)
-            ->where('stok', '>', 0)
-            ->where(function (Builder $query) {
-                $query->whereNull('tanggal_kadaluarsa')
-                    ->orWhereDate('tanggal_kadaluarsa', '>=', now()->toDateString());
-            })
+        return $query->bolehDijual()
             ->orderByRaw('tanggal_kadaluarsa is null')  // yang punya tanggal didahulukan
             ->orderBy('tanggal_kadaluarsa')
             ->orderBy('id');

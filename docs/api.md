@@ -71,8 +71,54 @@ const { data } = await api.post('/api/v1/login', { email, password });
 | POST | `/api/v1/penyesuaian` | `stok.penyesuaian` | Catat retur atau pemusnahan |
 | GET | `/api/v1/penyesuaian/{id}/pdf` | `stok.penyesuaian` | Unduh nota retur / berita acara pemusnahan (PDF) |
 
+| GET | `/api/v1/kasir/keranjang` | role kasir | Isi keranjang, total, dan kode QRIS sesuai nominal |
+| POST | `/api/v1/kasir/keranjang` | role kasir | Tambah obat `{ obat_id, jumlah? }`, jumlah digabung bila sudah ada |
+| PUT | `/api/v1/kasir/keranjang/{obat_id}` | role kasir | Ganti jumlah `{ jumlah }` |
+| DELETE | `/api/v1/kasir/keranjang/{obat_id}` | role kasir | Keluarkan satu obat |
+| DELETE | `/api/v1/kasir/keranjang` | role kasir | Kosongkan keranjang |
+| POST | `/api/v1/kasir/checkout` | role kasir | Bayar seluruh keranjang |
+| GET | `/api/v1/kasir/riwayat` | role kasir | Riwayat transaksi (+ `tanggal_mulai`, `tanggal_selesai`) dan ringkasan hari ini |
+| GET | `/api/v1/kasir/riwayat/{id}` | role kasir | Satu transaksi beserta obatnya |
+| GET | `/api/v1/kasir/riwayat/{id}/pdf` | role kasir | Struk (PDF) |
+| GET | `/api/v1/kasir/riwayat/laporan/pdf` | role kasir | Laporan penjualan `?tanggal_mulai=Y-m-d&tanggal_selesai=Y-m-d` (PDF) |
+
 Semua data otomatis dibatasi pada apotek user yang login. Data milik apotek lain
 dibalas 404. Endpoint tambah membalas 201 berisi data yang baru dibuat.
+
+### Meja kasir
+
+1. Cari obat dengan `GET /api/v1/obat?search=...`. Setiap obat berisi `stok_siap_dijual`:
+   stok tanpa batch kadaluarsa atau ditahan. Angka inilah batas yang boleh masuk keranjang.
+2. Keranjang disimpan di **session login**, sama seperti layar kasir web. Setiap
+   endpoint keranjang membalas isi keranjang terbaru:
+
+   ```json
+   {
+     "data": {
+       "item": [
+         { "obat_id": 5, "nama_obat": "Paracetamol", "satuan": "Tablet", "jumlah": 2, "harga_jual": 6500, "subtotal": 13000 }
+       ],
+       "jumlah_item": 2,
+       "total": 13000,
+       "qris": { "status": "siap", "nominal": 13000, "svg": "<svg ...>" }
+     }
+   }
+   ```
+
+   `qris.status`: `siap` (tampilkan `svg`), `belum_diatur` (kode QRIS apotek belum
+   diisi di `.env`), atau `tidak_terbaca`. `qris` bernilai `null` bila keranjang kosong.
+   Jumlah melebihi stok siap jual dibalas 422 pada kolom `jumlah`.
+3. Bayar dengan `POST /api/v1/kasir/checkout`:
+
+   | Isian | Keterangan |
+   |---|---|
+   | `metode_pembayaran` | `Tunai`, `QRIS`, atau `Transfer/Debit` |
+   | `uang_diterima` | Wajib untuk Tunai, tidak boleh kurang dari total |
+   | `no_referensi` | Opsional, untuk non-tunai |
+
+   Stok diambil otomatis dari batch yang paling dekat kadaluarsa (FEFO). Balasannya
+   201 berisi transaksi, termasuk `kembalian` dan `struk_url`, lalu keranjang dikosongkan.
+   Bila ditolak (422), keranjang tetap utuh.
 
 ### Isian obat
 

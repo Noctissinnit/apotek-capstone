@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BatchObat extends Model
 {
@@ -41,6 +42,63 @@ class BatchObat extends Model
     public function obat(): BelongsTo
     {
         return $this->belongsTo(Obat::class)->withTrashed();
+    }
+
+    /** Baris faktur barang masuk yang membentuk batch ini. */
+    public function barangMasuk(): HasMany
+    {
+        return $this->hasMany(DetailPembelian::class, 'batch_obat_id');
+    }
+
+    /** Pemakaian batch ini pada transaksi penjualan. */
+    public function pemakaian(): HasMany
+    {
+        return $this->hasMany(PemakaianBatch::class, 'batch_obat_id');
+    }
+
+    /** Pengeluaran lewat retur ke supplier atau pemusnahan. */
+    public function penyesuaian(): HasMany
+    {
+        return $this->hasMany(DetailPenyesuaianStok::class, 'batch_obat_id');
+    }
+
+    /**
+     * Riwayat keluar masuk batch ini, diurutkan dari yang paling lama.
+     * Dipakai halaman penelusuran untuk menunjukkan asal dan tujuan barang.
+     *
+     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     */
+    public function riwayat(): \Illuminate\Support\Collection
+    {
+        $masuk = $this->barangMasuk()->with('pembelian.supplier')->get()->map(fn (DetailPembelian $baris) => [
+            'tanggal' => $baris->pembelian?->tanggal_pembelian ?? $baris->created_at,
+            'jenis' => 'masuk',
+            'keterangan' => 'Barang masuk dari '.($baris->pembelian?->supplier?->nama_supplier ?? 'supplier'),
+            'dokumen' => $baris->pembelian?->no_faktur,
+            'jumlah' => $baris->jumlah_satuan,
+        ]);
+
+        $terjual = $this->pemakaian()->with('detailPenjualan.penjualan')->get()->map(fn (PemakaianBatch $baris) => [
+            'tanggal' => $baris->detailPenjualan?->penjualan?->tanggal_penjualan ?? $baris->created_at,
+            'jenis' => 'jual',
+            'keterangan' => 'Terjual di kasir',
+            'dokumen' => $baris->detailPenjualan?->penjualan?->no_faktur,
+            'jumlah' => -$baris->jumlah,
+        ]);
+
+        $keluarLain = $this->penyesuaian()->with('penyesuaian')->get()->map(function (DetailPenyesuaianStok $baris) {
+            $dokumen = $baris->penyesuaian;
+
+            return [
+                'tanggal' => $dokumen?->tanggal ?? $baris->created_at,
+                'jenis' => $dokumen?->isRetur() ? 'retur' : 'musnah',
+                'keterangan' => ($dokumen?->isRetur() ? 'Diretur ke supplier' : 'Dimusnahkan').' · alasan '.$baris->alasan,
+                'dokumen' => $dokumen?->no_dokumen,
+                'jumlah' => -$baris->jumlah,
+            ];
+        });
+
+        return $masuk->concat($terjual)->concat($keluarLain)->sortBy('tanggal')->values();
     }
 
     public function sudahKadaluarsa(): bool

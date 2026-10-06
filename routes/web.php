@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BatchObatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirTransaksiController;
 use App\Http\Controllers\KategoriController;
@@ -30,6 +31,12 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:obat.lihat');
     Route::resource('kategori', KategoriController::class)->except(['show'])
         ->middleware('permission:kategori.kelola');
+
+    // Penelusuran batch: boleh dilihat kasir juga, karena hanya membaca
+    Route::get('batch', [BatchObatController::class, 'index'])->name('batch.index')
+        ->middleware('permission:obat.lihat');
+    Route::get('batch/{batch}', [BatchObatController::class, 'show'])->name('batch.show')
+        ->middleware('permission:obat.lihat');
 
     // Barang masuk dari supplier
     Route::resource('pembelian', PembelianController::class)->only(['create', 'store'])

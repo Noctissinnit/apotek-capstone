@@ -2,9 +2,9 @@
 @section('title', 'Data Kategori')
 @section('header', 'Data Kategori')
 @section('subheader', 'Kelola master kategori obat')
-@section('actions')<a href="{{ route('kategori.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Tambah Kategori</a>@endsection
+@section('actions')<a href="{{ route('kategori.create') }}" class="btn-primary">Tambah Kategori</a>@endsection
 @section('content')
-<div class="rounded-xl border border-slate-200 bg-white">
+<div class="rounded-md border border-slate-200 bg-white">
     <table class="w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
             <tr>

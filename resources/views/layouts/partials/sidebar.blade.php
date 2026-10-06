@@ -52,16 +52,16 @@
 
     <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/50 lg:hidden" data-sidebar-toggle></div>
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-slate-900 transition-transform duration-200 lg:translate-x-0">
-        <div class="flex h-16 items-center gap-3 border-b border-slate-800 px-5">
-            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-                </svg>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-60 -translate-x-full flex-col bg-slate-900 transition-transform duration-200 lg:translate-x-0">
+        <div class="flex h-14 items-center gap-2.5 border-b border-slate-800 px-4">
+            <div class="flex h-7 w-7 items-center justify-center rounded bg-emerald-700 text-xs font-bold text-white">
+                {{ str(config('app.name', 'Apotek'))->substr(0, 1)->upper() }}
             </div>
-            <div>
-                <p class="text-sm font-semibold text-white">{{ config('app.name', 'Apotek') }}</p>
-                <p class="text-xs text-slate-400">Sistem Informasi Apotek</p>
+            <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-white">{{ config('app.name', 'Apotek') }}</p>
+                @auth
+                    <p class="truncate text-xs text-slate-400">{{ auth()->user()->apotek }}</p>
+                @endauth
             </div>
         </div>
 

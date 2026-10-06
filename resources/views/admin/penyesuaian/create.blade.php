@@ -14,7 +14,7 @@
         @csrf
 
         @if ($errors->any())
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+            <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
                 <p class="font-semibold">Periksa kembali isian berikut:</p>
                 <ul class="mt-1 list-inside list-disc">
                     @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
@@ -32,7 +32,7 @@
                             'musnah' => ['Dimusnahkan', 'Barang dihancurkan secara fisik. Nilainya dihitung sebagai kerugian penuh.'],
                             'retur' => ['Diretur ke Supplier', 'Barang dikembalikan. Biasanya diganti barang atau uang oleh supplier.'],
                         ] as $nilai => [$judul, $penjelasan])
-                            <label class="flex cursor-pointer gap-3 rounded-xl border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60">
+                            <label class="flex cursor-pointer gap-3 rounded-md border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60">
                                 <input type="radio" name="jenis" value="{{ $nilai }}" required @checked($jenisLama === $nilai) class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-emerald-600" data-pilih-jenis>
                                 <span>
                                     <span class="block text-sm font-semibold text-slate-900">{{ $judul }}</span>

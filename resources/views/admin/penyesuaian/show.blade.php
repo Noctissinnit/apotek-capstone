@@ -28,7 +28,7 @@
     </div>
 
     @if ($dokumen->keterangan)
-        <p class="mt-4 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600">{{ $dokumen->keterangan }}</p>
+        <p class="mt-4 rounded-md border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600">{{ $dokumen->keterangan }}</p>
     @endif
 
     <div class="mt-6 panel-card">

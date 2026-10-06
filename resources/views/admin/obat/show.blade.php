@@ -3,13 +3,13 @@
 @section('header', $obat->nama_obat)
 @section('subheader', 'Detail informasi obat')
 @section('actions')
-@can('obat.kelola')<a href="{{ route('obat.edit', $obat) }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Edit</a>@endcan
+@can('obat.kelola')<a href="{{ route('obat.edit', $obat) }}" class="btn-primary">Edit</a>@endcan
 @endsection
 @section('content')
-<div class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2 sm:p-6">
+<div class="grid gap-4 rounded-md border border-slate-200 bg-white p-5 sm:grid-cols-2 sm:p-6">
     @if ($obat->urlGambar())
         <div class="sm:col-span-2">
-            <img src="{{ $obat->urlGambar() }}" alt="Gambar {{ $obat->nama_obat }}" class="h-48 w-48 rounded-xl border border-slate-200 object-cover">
+            <img src="{{ $obat->urlGambar() }}" alt="Gambar {{ $obat->nama_obat }}" class="h-48 w-48 rounded-md border border-slate-200 object-cover">
         </div>
     @endif
 

@@ -17,16 +17,16 @@
     <div class="flex min-h-screen">
         @include('layouts.partials.sidebar')
 
-        <div class="flex min-w-0 flex-1 flex-col lg:pl-64">
+        <div class="flex min-w-0 flex-1 flex-col lg:pl-60">
             @include('layouts.partials.navbar')
 
-            <main class="flex-1 p-4 sm:p-6">
+            <main class="mx-auto w-full max-w-screen-2xl flex-1 px-4 py-5 sm:px-6">
                 @hasSection('header')
-                    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                    <div class="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-4">
                         <div>
-                            <h1 class="text-xl font-semibold text-slate-900">@yield('header')</h1>
+                            <h1 class="text-lg font-semibold tracking-tight text-slate-900">@yield('header')</h1>
                             @hasSection('subheader')
-                                <p class="mt-1 text-sm text-slate-500">@yield('subheader')</p>
+                                <p class="mt-0.5 text-sm text-slate-500">@yield('subheader')</p>
                             @endif
                         </div>
                         <div class="flex items-center gap-2">
@@ -36,13 +36,13 @@
                 @endif
 
                 @if (session('success'))
-                    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    <div class="mb-4 flex items-start gap-2 rounded-md border-l-2 border-emerald-600 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-900">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    <div class="mb-4 flex items-start gap-2 rounded-md border-l-2 border-red-600 bg-red-50 px-3 py-2.5 text-sm text-red-900">
                         {{ session('error') }}
                     </div>
                 @endif
@@ -53,7 +53,7 @@
 
                     {{-- Cadangan bila JavaScript mati --}}
                     <noscript>
-                        <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        <div class="mb-4 flex items-start gap-2 rounded-md border-l-2 border-emerald-600 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-900">
                             Pembayaran berhasil. Faktur {{ session('transaksi_sukses')['no_faktur'] }},
                             total {{ session('transaksi_sukses')['total'] }}
                             ({{ session('transaksi_sukses')['metode_pembayaran'] }}).

@@ -22,14 +22,14 @@
     ];
 @endphp
 
-<form method="POST" action="{{ $action }}" class="max-w-4xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+<form method="POST" action="{{ $action }}" class="max-w-4xl stat-card sm:p-7">
     @csrf
     @if ($method !== 'POST')
         @method($method)
     @endif
 
     @if ($errors->any())
-        <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+        <div class="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
             <p class="font-semibold">Periksa kembali {{ $errors->count() }} isian berikut:</p>
             <ul class="mt-1 list-inside list-disc">
                 @foreach ($errors->all() as $error)
@@ -187,7 +187,7 @@
             <legend class="form-label">Jabatan <span class="text-red-500">*</span></legend>
             <div class="grid gap-3 sm:grid-cols-2">
                 @foreach ($daftarJabatan as $value => $jabatan)
-                    <label class="group relative flex cursor-pointer gap-3 rounded-xl border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
+                    <label class="group relative flex cursor-pointer gap-3 rounded-md border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
                         <input
                             type="radio"
                             name="jabatan"
@@ -212,7 +212,7 @@
             <legend class="form-label">Ditempatkan di <span class="text-red-500">*</span></legend>
             <div class="grid gap-3 sm:grid-cols-2">
                 @foreach ($daftarApotek as $value => $keterangan)
-                    <label class="group relative flex cursor-pointer gap-3 rounded-xl border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
+                    <label class="group relative flex cursor-pointer gap-3 rounded-md border border-slate-300 bg-white p-4 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
                         <input
                             type="radio"
                             name="apotek"
@@ -235,7 +235,7 @@
     </div>
 
     <div class="mt-8 flex flex-col-reverse justify-end gap-3 border-t border-slate-100 pt-5 sm:flex-row">
-        <a href="{{ route('admin.user.index') }}" class="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 px-5 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-4 focus-visible:ring-slate-300/40 focus-visible:outline-none">Batal</a>
-        <button type="submit" class="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 hover:shadow-md focus-visible:ring-4 focus-visible:ring-emerald-500/20 focus-visible:outline-none">{{ $submitLabel }}</button>
+        <a href="{{ route('admin.user.index') }}" class="inline-flex h-11 items-center justify-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-4 focus-visible:ring-slate-300/40 focus-visible:outline-none">Batal</a>
+        <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 hover:shadow-md focus-visible:ring-4 focus-visible:ring-emerald-500/20 focus-visible:outline-none">{{ $submitLabel }}</button>
     </div>
 </form>

@@ -14,14 +14,14 @@
 <body class="flex min-h-screen items-center justify-center bg-slate-100 px-4 font-sans text-slate-800 antialiased">
     <div class="w-full max-w-sm">
         <div class="mb-6 flex flex-col items-center text-center">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white">
+            <div class="flex h-12 w-12 items-center justify-center rounded-md bg-emerald-600 text-white">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/></svg>
             </div>
             <h1 class="mt-4 text-xl font-semibold text-slate-900">{{ config('app.name', 'Apotek') }}</h1>
             <p class="mt-1 text-sm text-slate-500">Masuk untuk melanjutkan ke sistem</p>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-md border border-slate-200 bg-white p-6">
             @if (session('success'))
                 <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
                     {{ session('success') }}
@@ -47,7 +47,7 @@
                 <div>
                     <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password</label>
                     <input id="password" name="password" type="password" required autocomplete="current-password"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+                        class="form-input outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
                     @error('password')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror

@@ -5,7 +5,7 @@
 @section('subheader', 'Daftar seluruh obat yang tersedia')
 
 @section('content')
-    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="panel-card">
         <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
             <div>
                 <h2 class="text-lg font-semibold text-slate-900">Stok Obat</h2>
@@ -21,7 +21,7 @@
                         type="text"
                         value="{{ old('search', $search) }}"
                         placeholder="Cari nama, kode, atau kategori..."
-                        class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 pr-10 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                        class="w-full rounded-md border border-slate-300 bg-slate-50 px-4 py-2.5 pr-10 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
                     >
                     <button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-emerald-600" aria-label="Cari">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>

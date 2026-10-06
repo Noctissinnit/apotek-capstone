@@ -14,7 +14,7 @@
         @csrf
 
         @if ($errors->any())
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+            <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
                 <p class="font-semibold">Periksa kembali isian berikut:</p>
                 <ul class="mt-1 list-inside list-disc">
                     @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
@@ -64,7 +64,7 @@
                 @endphp
 
                 @foreach ($barisLama as $i => $baris)
-                    <fieldset class="rounded-xl border border-slate-200 p-4" data-baris>
+                    <fieldset class="rounded-md border border-slate-200 p-4" data-baris>
                         <legend class="px-1 text-xs font-semibold text-slate-500">Baris <span data-nomor-baris>{{ $i + 1 }}</span></legend>
 
                         <div class="grid gap-3 sm:grid-cols-6">

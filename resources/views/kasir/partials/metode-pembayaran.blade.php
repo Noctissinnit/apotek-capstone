@@ -14,7 +14,7 @@
 
     <div class="grid grid-cols-3 gap-2">
         @foreach (App\Http\Controllers\KasirTransaksiController::METODE_PEMBAYARAN as $metode)
-            <label class="flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-2 py-3 text-center transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/70 has-[:checked]:text-emerald-800 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
+            <label class="flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2 py-3 text-center transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/70 has-[:checked]:text-emerald-800 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-emerald-500/20">
                 <input type="radio" name="metode_pembayaran" value="{{ $metode }}" class="sr-only" @checked($terpilih === $metode) required>
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $ikon[$metode] }}"/></svg>
                 <span class="text-xs font-semibold">{{ $metode }}</span>
@@ -31,7 +31,7 @@
 @if (($qris ?? null) !== null)
     <div class="mt-4 hidden" data-bagian-qris>
         @if ($qris['status'] === 'siap')
-            <div class="rounded-xl border border-slate-200 bg-white p-4 text-center">
+            <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
                 <p class="text-sm font-medium text-slate-700">Minta pembeli memindai kode ini</p>
                 <div class="mx-auto mt-3 w-48 [&>svg]:h-auto [&>svg]:w-full">{!! $qris['svg'] !!}</div>
                 <p class="mt-3 text-lg font-bold text-slate-900">Rp {{ number_format($qris['nominal'], 0, ',', '.') }}</p>
@@ -40,12 +40,12 @@
                 </p>
             </div>
         @elseif ($qris['status'] === 'belum_diatur')
-            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 Kode QRIS apotek belum diatur, jadi kode QR tidak bisa ditampilkan.
                 Pembayaran QRIS tetap bisa dicatat memakai stiker QRIS di meja.
             </div>
         @else
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                 Kode QRIS apotek tidak terbaca. Periksa kembali teks QRIS yang disalin ke pengaturan.
             </div>
         @endif
@@ -102,7 +102,7 @@
         data-uang-diterima
     >
 
-    <div class="mt-2 flex items-baseline justify-between rounded-xl bg-slate-50 px-3 py-2">
+    <div class="mt-2 flex items-baseline justify-between rounded-md bg-slate-50 px-3 py-2">
         <span class="text-sm text-slate-500">Kembalian</span>
         <span class="text-lg font-bold text-slate-900" data-kembalian>Rp 0</span>
     </div>

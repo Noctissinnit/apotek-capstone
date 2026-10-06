@@ -7,7 +7,7 @@
 @section('content')
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+            <span class="flex h-11 w-11 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13 5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             </span>
             <div>
@@ -22,7 +22,7 @@
     </div>
 
     <div class="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="cart-title">
+        <section class="overflow-hidden panel-card" aria-labelledby="cart-title">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
                     <h2 id="cart-title" class="text-base font-semibold text-slate-900">Daftar Obat</h2>
@@ -50,7 +50,7 @@
                     @foreach ($items as $item)
                         <article class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-4 transition hover:bg-slate-50/70 sm:grid-cols-[minmax(0,1fr)_100px_130px_40px] sm:gap-4 sm:px-5">
                             <div class="flex min-w-0 items-center gap-3">
-                                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-700">
+                                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-700">
                                     {{ str($item['obat']->nama_obat)->substr(0, 1)->upper() }}
                                 </span>
                                 <div class="min-w-0">
@@ -79,12 +79,12 @@
             @endif
         </section>
 
-        <aside class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:sticky xl:top-20" aria-labelledby="summary-title">
+        <aside class="overflow-hidden panel-card xl:sticky xl:top-20" aria-labelledby="summary-title">
             <div class="border-b border-slate-200 px-5 py-4">
                 <h2 id="summary-title" class="text-base font-semibold text-slate-900">Ringkasan Pembayaran</h2>
             </div>
             <div class="p-5">
-                <div class="rounded-xl bg-slate-50 p-4">
+                <div class="rounded-md bg-slate-50 p-4">
                     <dl class="space-y-3 text-sm">
                         <div class="flex justify-between">
                             <dt class="text-slate-500">Jenis obat</dt>

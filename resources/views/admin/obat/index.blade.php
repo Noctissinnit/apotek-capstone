@@ -11,12 +11,12 @@
 @endsection
 
 @section('content')
-<div class="rounded-xl border border-slate-200 bg-white">
+<div class="rounded-md border border-slate-200 bg-white">
     <div class="border-b border-slate-200 p-5">
         <form method="GET" action="{{ route('obat.index') }}" class="space-y-3">
-            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kode, nama, atau kategori..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kode, nama, atau kategori..." class="form-input focus:border-emerald-500 focus:ring-emerald-500">
             <div class="flex flex-nowrap items-end gap-3 overflow-x-auto pb-1">
-                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Urutkan</span><select name="sort_option" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Urutkan</span><select name="sort_option" class="form-input focus:border-emerald-500 focus:ring-emerald-500">
                         <option value="kode|asc" @selected($sort==='kode' && $direction==='asc' )>Kode Obat (naik)</option>
                         <option value="kode|desc" @selected($sort==='kode' && $direction==='desc' )>Kode Obat (turun)</option>
                         <option value="nama|asc" @selected($sort==='nama' && $direction==='asc' )>Nama / Abjad (A-Z)</option>
@@ -26,10 +26,10 @@
                         <option value="stok|asc" @selected($sort==='stok' && $direction==='asc' )>Stok (terendah)</option>
                         <option value="stok|desc" @selected($sort==='stok' && $direction==='desc' )>Stok (tertinggi)</option>
                     </select></label>
-                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Kategori</span><select name="kategori_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Kategori</span><select name="kategori_id" class="form-input focus:border-emerald-500 focus:ring-emerald-500">
                         <option value="">Semua Kategori</option>@foreach ($kategori as $item)<option value="{{ $item->id_kategori }}" @selected((string) request('kategori_id')===(string) $item->id_kategori)>{{ $item->nama_kategori }}</option>@endforeach
                     </select></label>
-                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Satuan</span><select name="satuan" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <label class="block min-w-[220px] flex-1"><span class="mb-1 block text-xs font-medium text-slate-500">Satuan</span><select name="satuan" class="form-input focus:border-emerald-500 focus:ring-emerald-500">
                         <option value="">Semua Satuan</option>@foreach ($satuan as $item)<option value="{{ $item }}" @selected(request('satuan')===$item)>{{ $item }}</option>@endforeach
                     </select></label>
                 <button type="submit" class="min-w-[120px] shrink-0 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900">Terapkan</button>

@@ -1,4 +1,4 @@
-<header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
+<header class="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
     <div class="flex items-center gap-3">
         <button type="button" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" data-sidebar-toggle aria-label="Buka menu">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -25,7 +25,7 @@
             <p class="text-sm font-medium text-slate-900">{{ auth()->user()->name }}</p>
             <p class="text-xs text-slate-500">{{ $roleLabel }}</p>
         </div>
-        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
             {{ str(auth()->user()->name)->substr(0, 1)->upper() }}
         </div>
 

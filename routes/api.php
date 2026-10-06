@@ -5,7 +5,11 @@ use App\Http\Controllers\Api\V1\BatchObatController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\KategoriController;
 use App\Http\Controllers\Api\V1\ObatController;
+use App\Http\Controllers\Api\V1\PembelianController;
+use App\Http\Controllers\Api\V1\PenyesuaianStokController;
 use App\Http\Controllers\Api\V1\ReferensiController;
+use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\PenyesuaianStokController as WebPenyesuaianStokController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,6 +36,39 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::get('/batch', [BatchObatController::class, 'index'])->name('batch.index');
             Route::get('/batch/{batch}', [BatchObatController::class, 'show'])->name('batch.show');
+        });
+
+        Route::middleware('permission:obat.kelola')->group(function () {
+            Route::post('/obat', [ObatController::class, 'store'])->name('obat.store');
+            Route::match(['put', 'patch'], '/obat/{obat}', [ObatController::class, 'update'])->name('obat.update');
+            Route::delete('/obat/{obat}', [ObatController::class, 'destroy'])->name('obat.destroy');
+        });
+
+        Route::middleware('permission:kategori.kelola')->group(function () {
+            Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
+            Route::match(['put', 'patch'], '/kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
+            Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+        });
+
+        // Pilihan supplier di form barang masuk dan retur
+        Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index')
+            ->middleware('permission:pembelian.kelola|stok.penyesuaian');
+
+        // Barang masuk dari supplier
+        Route::get('/pembelian', [PembelianController::class, 'index'])->name('pembelian.index')
+            ->middleware('permission:pembelian.lihat');
+        Route::get('/pembelian/{pembelian}', [PembelianController::class, 'show'])->name('pembelian.show')
+            ->middleware('permission:pembelian.lihat');
+        Route::post('/pembelian', [PembelianController::class, 'store'])->name('pembelian.store')
+            ->middleware('permission:pembelian.kelola');
+
+        // Retur ke supplier dan pemusnahan stok
+        Route::middleware('permission:stok.penyesuaian')->group(function () {
+            Route::get('/penyesuaian', [PenyesuaianStokController::class, 'index'])->name('penyesuaian.index');
+            Route::post('/penyesuaian', [PenyesuaianStokController::class, 'store'])->name('penyesuaian.store');
+            Route::get('/penyesuaian/{penyesuaian}', [PenyesuaianStokController::class, 'show'])->name('penyesuaian.show');
+            // berkas PDF-nya sama persis dengan yang diunduh dari halaman web
+            Route::get('/penyesuaian/{penyesuaian}/pdf', [WebPenyesuaianStokController::class, 'pdf'])->name('penyesuaian.pdf');
         });
 
         Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin')

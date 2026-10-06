@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Obat;
+use App\Actions\SimpanObat;
 use App\Models\Kategori;
+use App\Models\Obat;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ViewErrorBag;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -58,28 +57,15 @@ class ObatController extends Controller
             : view('admin.obat.create', $data);
     }
 
-    public function store(Request $request): Response|RedirectResponse
+    public function store(Request $request, SimpanObat $simpan): Response|RedirectResponse
     {
         try {
-            $data = $this->validatedData($request);
+            $data = $request->validate(SimpanObat::aturan());
         } catch (ValidationException $gagal) {
             return $this->tanggapiIsianSalah($request, $gagal, new Obat);
         }
 
-        $data['gambar'] = $this->simpanGambar($request);
-
-        $obat = Obat::create($data);
-
-        // Stok yang diisi langsung di master dicatat sebagai batch stok awal,
-        // supaya obat tetap bisa dijual walau belum pernah lewat barang masuk.
-        if ($obat->stok > 0) {
-            $obat->batch()->create([
-                'no_batch' => 'STOK-AWAL',
-                'tanggal_kadaluarsa' => $obat->tanggal_kadaluarsa,
-                'stok' => $obat->stok,
-                'modal_per_satuan' => $obat->harga_beli ?: null,
-            ]);
-        }
+        $simpan->buat($request->user(), $data, $request->file('gambar'));
 
         return $this->kembaliKeDaftar($request, 'Data obat berhasil ditambahkan.');
     }
@@ -102,38 +88,17 @@ class ObatController extends Controller
             : view('admin.obat.edit', $data);
     }
 
-    public function update(Request $request, Obat $obat): Response|RedirectResponse
+    public function update(Request $request, Obat $obat, SimpanObat $simpan): Response|RedirectResponse
     {
         $this->ensureSameApotek($obat);
 
         try {
-            $data = $this->validatedData($request, $obat);
+            $data = $request->validate(SimpanObat::aturan($obat));
         } catch (ValidationException $gagal) {
             return $this->tanggapiIsianSalah($request, $gagal, $obat);
         }
 
-        $gambarLama = $obat->gambar;
-
-        // Kalau stoknya sudah terpecah jadi batch, angka stok tidak boleh diubah
-        // lewat form ini. Perubahannya harus lewat barang masuk atau penyesuaian stok.
-        if ($obat->batch()->exists()) {
-            unset($data['stok']);
-        }
-
-        if ($request->boolean('hapus_gambar')) {
-            $data['gambar'] = null;
-        }
-
-        if ($gambarBaru = $this->simpanGambar($request)) {
-            $data['gambar'] = $gambarBaru;
-        }
-
-        $obat->update($data);
-
-        // Berkas lama dibuang hanya setelah data tersimpan, agar tidak hilang bila gagal
-        if ($gambarLama && $gambarLama !== $obat->gambar) {
-            Storage::disk('unggahan')->delete($gambarLama);
-        }
+        $simpan->ubah($request->user(), $obat, $data, $request->file('gambar'), $request->boolean('hapus_gambar'));
 
         return $this->kembaliKeDaftar($request, 'Data obat berhasil diperbarui.');
     }
@@ -182,45 +147,6 @@ class ObatController extends Controller
             'kategori' => Kategori::orderBy('nama_kategori')->get(),
             'errors' => (new ViewErrorBag)->put('default', $gagal->validator->errors()),
         ], 422);
-    }
-
-    /**
-     * Simpan gambar yang diunggah, kembalikan nama berkasnya. Null bila tidak ada unggahan.
-     */
-    private function simpanGambar(Request $request): ?string
-    {
-        if (! $request->hasFile('gambar')) {
-            return null;
-        }
-
-        return Storage::disk('unggahan')->putFile('obat', $request->file('gambar'));
-    }
-
-    private function validatedData(Request $request, ?Obat $obat = null): array
-    {
-        $data = $request->validate([
-            'kode_obat' => ['required', 'string', 'max:20', 'unique:obat,kode_obat,' . ($obat?->id ?? 'NULL') . ',id'],
-            'nama_obat' => ['required', 'string', 'max:255'],
-            'kategori_id' => ['nullable', 'integer', 'exists:kategori,id_kategori'],
-            'satuan' => ['required', Rule::in(Obat::SATUAN)],
-            // 1 box berisi berapa satuan terkecil, dipakai saat barang masuk
-            'isi_per_box' => ['required', 'integer', 'min:1', 'max:100000'],
-            'harga_beli' => ['required', 'numeric', 'min:0'],
-            'harga_jual' => ['required', 'numeric', 'min:0'],
-            'stok' => ['required', 'integer', 'min:0'],
-            'stok_minimum' => ['required', 'integer', 'min:0'],
-            'tanggal_kadaluarsa' => ['nullable', 'date'],
-            'keterangan' => ['nullable', 'string'],
-            // maksimal 2 MB, cukup untuk foto kemasan obat
-            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
-
-        // gambar diurus terpisah lewat simpanGambar()
-        unset($data['gambar']);
-
-        $data['apotek'] = $request->user()->apotek;
-
-        return $data;
     }
 
     private function ensureSameApotek(Obat $obat): void

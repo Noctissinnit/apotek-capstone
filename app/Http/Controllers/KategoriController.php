@@ -27,7 +27,7 @@ class KategoriController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Kategori::create($this->validatedData($request));
+        Kategori::create($request->validate(Kategori::aturan()));
 
         return to_route('kategori.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
@@ -39,26 +39,19 @@ class KategoriController extends Controller
 
     public function update(Request $request, Kategori $kategori): RedirectResponse
     {
-        $kategori->update($this->validatedData($request, $kategori));
+        $kategori->update($request->validate(Kategori::aturan($kategori)));
 
         return to_route('kategori.index')->with('success', 'Kategori berhasil diperbarui.');
     }
 
     public function destroy(Kategori $kategori): RedirectResponse
     {
-        if ($kategori->obat()->exists()) {
+        if ($kategori->masihDipakai()) {
             return to_route('kategori.index')->with('error', 'Kategori yang masih digunakan obat tidak dapat dihapus.');
         }
 
         $kategori->delete();
 
         return to_route('kategori.index')->with('success', 'Kategori berhasil dihapus.');
-    }
-
-    private function validatedData(Request $request, ?Kategori $kategori = null): array
-    {
-        return $request->validate([
-            'nama_kategori' => ['required', 'string', 'max:50', 'unique:kategori,nama_kategori,'.($kategori?->id_kategori ?? 'NULL').',id_kategori'],
-        ]);
     }
 }

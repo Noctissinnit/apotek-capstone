@@ -56,8 +56,90 @@ const { data } = await api.post('/api/v1/login', { email, password });
 | GET | `/api/v1/dashboard/kasir` | role kasir | Ringkasan dashboard kasir |
 | GET | `/api/v1/monitoring` | role kasir | Stok menipis dan batch per tingkat peringatan kadaluarsa |
 
-Semua data otomatis dibatasi pada apotek user yang login. Obat atau batch milik
-apotek lain dibalas 404.
+| POST | `/api/v1/obat` | `obat.kelola` | Tambah obat. Stok yang diisi otomatis jadi batch `STOK-AWAL` |
+| PUT | `/api/v1/obat/{id}` | `obat.kelola` | Ubah obat (lihat catatan gambar di bawah) |
+| DELETE | `/api/v1/obat/{id}` | `obat.kelola` | Hapus obat (soft delete), balasan 204 |
+| POST | `/api/v1/kategori` | `kategori.kelola` | Tambah kategori |
+| PUT | `/api/v1/kategori/{id}` | `kategori.kelola` | Ubah kategori |
+| DELETE | `/api/v1/kategori/{id}` | `kategori.kelola` | Hapus kategori, 409 bila masih dipakai obat |
+| GET | `/api/v1/supplier` | `pembelian.kelola` atau `stok.penyesuaian` | Pilihan supplier |
+| GET | `/api/v1/pembelian` | `pembelian.lihat` | Daftar faktur barang masuk |
+| GET | `/api/v1/pembelian/{id}` | `pembelian.lihat` | Faktur beserta rincian baris |
+| POST | `/api/v1/pembelian` | `pembelian.kelola` | Catat barang masuk |
+| GET | `/api/v1/penyesuaian` | `stok.penyesuaian` | Daftar dokumen retur/pemusnahan (+ `?jenis=retur\|musnah`) |
+| GET | `/api/v1/penyesuaian/{id}` | `stok.penyesuaian` | Dokumen beserta rincian baris |
+| POST | `/api/v1/penyesuaian` | `stok.penyesuaian` | Catat retur atau pemusnahan |
+| GET | `/api/v1/penyesuaian/{id}/pdf` | `stok.penyesuaian` | Unduh nota retur / berita acara pemusnahan (PDF) |
+
+Semua data otomatis dibatasi pada apotek user yang login. Data milik apotek lain
+dibalas 404. Endpoint tambah membalas 201 berisi data yang baru dibuat.
+
+### Isian obat
+
+`kode_obat`, `nama_obat`, `kategori_id`?, `satuan`, `isi_per_box`, `harga_beli`,
+`harga_jual`, `stok`, `stok_minimum`, `tanggal_kadaluarsa`?, `keterangan`?, `gambar`?
+(jpg/png/webp, maksimal 2 MB). Saat mengubah, ada juga `hapus_gambar` (boolean).
+
+- Bila obat sudah punya batch, `stok` yang dikirim saat mengubah **diabaikan**.
+  Stok hanya berubah lewat barang masuk, penjualan, atau retur/pemusnahan.
+- **Mengunggah gambar** harus memakai `multipart/form-data`. PHP tidak membaca berkas
+  pada request PUT, jadi kirim sebagai **POST** ke `/api/v1/obat/{id}` dengan isian
+  tambahan `_method=PUT`. Tanpa gambar, PUT biasa dengan JSON juga bisa.
+
+### Isian barang masuk
+
+```json
+{
+  "no_faktur": "FK-20261006-001",
+  "supplier_id": 1,
+  "tanggal_pembelian": "2026-10-06",
+  "keterangan": null,
+  "item": [
+    {
+      "obat_id": 5,
+      "satuan_input": "box",
+      "jumlah": 2,
+      "harga_beli": 50000,
+      "diskon_persen": 10,
+      "no_batch": "PCT-2610",
+      "tanggal_kadaluarsa": "2027-10-06"
+    }
+  ]
+}
+```
+
+- `no_faktur` boleh dikosongkan, nanti dibuatkan otomatis.
+- `satuan_input`: `box` (jumlah dan harga per box) atau `satuan` (per satuan terkecil).
+  Stok selalu disimpan dalam satuan terkecil: 2 box × isi 100 = 200 tablet.
+- Satu baris = satu batch. Nomor batch yang sudah ada pada obat yang sama dianggap
+  kiriman lanjutan: stoknya ditambahkan ke batch itu.
+- Bila ada satu baris yang ditolak, **seluruh faktur dibatalkan** dan tidak ada stok yang berubah.
+
+### Isian retur / pemusnahan
+
+```json
+{
+  "no_dokumen": null,
+  "jenis": "retur",
+  "tanggal": "2026-10-06",
+  "supplier_id": 1,
+  "keterangan": null,
+  "item": [
+    { "batch_obat_id": 12, "jumlah": 8, "alasan": "kadaluarsa" }
+  ]
+}
+```
+
+- Kirim hanya batch yang dipilih. Satu batch tidak boleh muncul dua kali.
+- `jenis`: `retur` (wajib `supplier_id`) atau `musnah`.
+- `alasan`: `kadaluarsa`, `rusak`, `hilang`, atau `lainnya`.
+- `no_dokumen` boleh dikosongkan: `RTR-...` untuk retur, `BAP-...` untuk pemusnahan.
+- Calon batch untuk dipilih bisa diambil dari `GET /api/v1/batch?status=kadaluarsa`
+  dan `GET /api/v1/batch?status=siap`.
+- Jumlah melebihi stok batch dibalas 422 dan seluruh dokumen dibatalkan.
+- Balasan berisi `pdf_url` untuk mengunduh dokumennya. Buka dengan cookie login
+  yang sama, misalnya lewat `fetch(..., { credentials: "include" })` lalu simpan
+  sebagai blob.
 
 ### Parameter daftar
 
@@ -133,5 +215,6 @@ Semua error berbentuk JSON:
 | 401 | Belum login atau session habis | `{ "message": "Silakan masuk terlebih dahulu." }` |
 | 403 | Tidak punya izin | `{ "message": "Anda tidak memiliki akses ke data ini." }` |
 | 404 | Tidak ada, atau milik apotek lain | `{ "message": "Data tidak ditemukan." }` |
+| 409 | Tidak bisa diproses karena keadaan data, misalnya kategori masih dipakai | `{ "message": "..." }` |
 | 419 | Token CSRF kedaluwarsa | Panggil ulang `/sanctum/csrf-cookie`, lalu ulangi |
 | 422 | Isian tidak valid | `{ "message": "...", "errors": { "email": ["..."] } }` |

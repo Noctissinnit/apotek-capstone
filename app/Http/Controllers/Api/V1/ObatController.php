@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\SimpanObat;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ObatResource;
 use App\Models\Obat;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
 class ObatController extends Controller
@@ -51,5 +54,47 @@ class ObatController extends Controller
         return (new ObatResource($obat))->additional([
             'meta' => ['stok_siap_dijual' => $obat->stokSiapDijual()],
         ]);
+    }
+
+    /**
+     * Kirim sebagai multipart/form-data bila menyertakan gambar.
+     */
+    public function store(Request $request, SimpanObat $simpan): JsonResponse
+    {
+        $data = $request->validate(SimpanObat::aturan());
+
+        $obat = $simpan->buat($request->user(), $data, $request->file('gambar'));
+
+        return (new ObatResource($obat->load('kategoriRelasi')))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    /**
+     * Mengganti gambar butuh multipart/form-data, dan PHP tidak membaca berkas
+     * pada request PUT. Karena itu kirim sebagai POST dengan isian _method=PUT.
+     */
+    public function update(Request $request, Obat $obat, SimpanObat $simpan): ObatResource
+    {
+        abort_unless($obat->bolehDiaksesOleh($request->user()), 404);
+
+        $data = $request->validate([
+            ...SimpanObat::aturan($obat),
+            'hapus_gambar' => ['nullable', 'boolean'],
+        ]);
+        unset($data['hapus_gambar']);
+
+        $simpan->ubah($request->user(), $obat, $data, $request->file('gambar'), $request->boolean('hapus_gambar'));
+
+        return new ObatResource($obat->load('kategoriRelasi'));
+    }
+
+    public function destroy(Request $request, Obat $obat): Response
+    {
+        abort_unless($obat->bolehDiaksesOleh($request->user()), 404);
+
+        $obat->delete();
+
+        return response()->noContent();
     }
 }

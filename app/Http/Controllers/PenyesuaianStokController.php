@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SimpanPenyesuaianStok;
 use App\Models\BatchObat;
-use App\Models\DetailPenyesuaianStok;
 use App\Models\PenyesuaianStok;
 use App\Models\Supplier;
 use Dompdf\Dompdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -27,14 +26,7 @@ class PenyesuaianStokController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        $awalBulan = now()->startOfMonth();
-
-        $nilaiBulanIni = PenyesuaianStok::query()
-            ->forUser($user)
-            ->whereDate('tanggal', '>=', $awalBulan)
-            ->selectRaw('jenis, sum(total_nilai) as jumlah')
-            ->groupBy('jenis')
-            ->pluck('jumlah', 'jenis');
+        $nilaiBulanIni = PenyesuaianStok::nilaiBulanIni($user);
 
         return view('admin.penyesuaian.index', [
             'dokumen' => PenyesuaianStok::query()
@@ -45,8 +37,8 @@ class PenyesuaianStokController extends Controller
                 ->latest('id')
                 ->paginate(10)
                 ->withQueryString(),
-            'nilaiRetur' => (float) ($nilaiBulanIni[PenyesuaianStok::JENIS_RETUR] ?? 0),
-            'nilaiMusnah' => (float) ($nilaiBulanIni[PenyesuaianStok::JENIS_MUSNAH] ?? 0),
+            'nilaiRetur' => $nilaiBulanIni[PenyesuaianStok::JENIS_RETUR],
+            'nilaiMusnah' => $nilaiBulanIni[PenyesuaianStok::JENIS_MUSNAH],
             'jumlahBatchKadaluarsa' => BatchObat::query()->forUser($user)->kadaluarsa()->count(),
         ]);
     }
@@ -60,14 +52,20 @@ class PenyesuaianStokController extends Controller
             'batchKadaluarsa' => BatchObat::query()->forUser($user)->kadaluarsa()->with('obat')->orderBy('tanggal_kadaluarsa')->get(),
             'batchLain' => BatchObat::query()->forUser($user)->siapDijual()->with('obat')->get(),
             'supplier' => Supplier::orderBy('nama_supplier')->get(),
-            'nomorUsulan' => $this->nomorDokumenBerikutnya($request->input('jenis', PenyesuaianStok::JENIS_MUSNAH)),
+            'nomorUsulan' => SimpanPenyesuaianStok::nomorDokumenBerikutnya($request->input('jenis', PenyesuaianStok::JENIS_MUSNAH)),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, SimpanPenyesuaianStok $simpan): RedirectResponse
     {
-        $data = $this->validated($request);
-        $user = $request->user();
+        $data = $request->validate([
+            ...SimpanPenyesuaianStok::aturanDokumen(),
+            'item' => ['required', 'array', 'min:1'],
+            'item.*.pilih' => ['nullable'],
+            'item.*.batch_obat_id' => ['required', 'integer', 'exists:batch_obat,id'],
+            'item.*.jumlah' => ['nullable', 'integer', 'min:0'],
+            'item.*.alasan' => ['required', Rule::in(PenyesuaianStok::ALASAN)],
+        ], SimpanPenyesuaianStok::pesan());
 
         // baris tanpa centang diabaikan
         $dipilih = collect($data['item'])->filter(fn (array $baris) => ! empty($baris['pilih']) && (int) $baris['jumlah'] > 0);
@@ -78,61 +76,7 @@ class PenyesuaianStokController extends Controller
             ]);
         }
 
-        $dokumen = DB::transaction(function () use ($data, $dipilih, $user): PenyesuaianStok {
-            $dokumen = PenyesuaianStok::create([
-                'no_dokumen' => $data['no_dokumen'],
-                'jenis' => $data['jenis'],
-                'tanggal' => $data['tanggal'],
-                'user_id' => $user->id,
-                'apotek' => $user->apotek,
-                'supplier_id' => $data['jenis'] === PenyesuaianStok::JENIS_RETUR ? ($data['supplier_id'] ?? null) : null,
-                'total_nilai' => 0,
-                'keterangan' => $data['keterangan'] ?? null,
-            ]);
-
-            $totalNilai = 0;
-
-            foreach ($dipilih as $baris) {
-                $batch = BatchObat::query()
-                    ->forUser($user)
-                    ->lockForUpdate()
-                    ->find($baris['batch_obat_id']);
-
-                if (! $batch) {
-                    throw ValidationException::withMessages([
-                        'item' => 'Ada batch yang bukan milik apotek Anda.',
-                    ]);
-                }
-
-                $jumlah = (int) $baris['jumlah'];
-
-                if ($jumlah > $batch->stok) {
-                    throw ValidationException::withMessages([
-                        'item' => "Jumlah untuk batch {$batch->no_batch} melebihi stok yang ada ({$batch->stok}).",
-                    ]);
-                }
-
-                $nilai = round((float) $batch->modal_per_satuan * $jumlah, 2);
-                $totalNilai += $nilai;
-
-                DetailPenyesuaianStok::create([
-                    'penyesuaian_stok_id' => $dokumen->id,
-                    'batch_obat_id' => $batch->id,
-                    'obat_id' => $batch->obat_id,
-                    'jumlah' => $jumlah,
-                    'modal_per_satuan' => $batch->modal_per_satuan,
-                    'nilai' => $nilai,
-                    'alasan' => $baris['alasan'],
-                ]);
-
-                $batch->decrement('stok', $jumlah);
-                $batch->obat()->first()?->decrement('stok', $jumlah);
-            }
-
-            $dokumen->update(['total_nilai' => $totalNilai]);
-
-            return $dokumen;
-        });
+        $dokumen = $simpan($request->user(), $data, $dipilih);
 
         $kata = $dokumen->isRetur() ? 'Retur' : 'Pemusnahan';
 
@@ -166,35 +110,5 @@ class PenyesuaianStokController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="'.$namaBerkas.'"',
         ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validated(Request $request): array
-    {
-        return $request->validate([
-            'no_dokumen' => ['required', 'string', 'max:50', 'unique:penyesuaian_stok,no_dokumen'],
-            'jenis' => ['required', Rule::in([PenyesuaianStok::JENIS_RETUR, PenyesuaianStok::JENIS_MUSNAH])],
-            'tanggal' => ['required', 'date'],
-            'supplier_id' => ['nullable', 'integer', 'exists:supplier,id', Rule::requiredIf($request->input('jenis') === PenyesuaianStok::JENIS_RETUR)],
-            'keterangan' => ['nullable', 'string'],
-
-            'item' => ['required', 'array', 'min:1'],
-            'item.*.pilih' => ['nullable'],
-            'item.*.batch_obat_id' => ['required', 'integer', 'exists:batch_obat,id'],
-            'item.*.jumlah' => ['nullable', 'integer', 'min:0'],
-            'item.*.alasan' => ['required', Rule::in(PenyesuaianStok::ALASAN)],
-        ], [
-            'supplier_id.required' => 'Retur harus menyebutkan supplier tujuan.',
-        ]);
-    }
-
-    private function nomorDokumenBerikutnya(string $jenis): string
-    {
-        $awalan = $jenis === PenyesuaianStok::JENIS_RETUR ? 'RTR' : 'BAP';
-        $urutan = PenyesuaianStok::where('jenis', $jenis)->whereDate('created_at', today())->count() + 1;
-
-        return $awalan.'-'.now()->format('Ymd').'-'.str_pad((string) $urutan, 3, '0', STR_PAD_LEFT);
     }
 }

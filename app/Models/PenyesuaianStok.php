@@ -74,4 +74,24 @@ class PenyesuaianStok extends Model
     {
         return $query->where($query->getModel()->getTable().'.apotek', $user->apotek);
     }
+
+    /**
+     * Nilai barang yang keluar lewat retur dan pemusnahan sejak awal bulan ini.
+     *
+     * @return array{retur: float, musnah: float}
+     */
+    public static function nilaiBulanIni(User $user): array
+    {
+        $nilai = self::query()
+            ->forUser($user)
+            ->whereDate('tanggal', '>=', now()->startOfMonth())
+            ->selectRaw('jenis, sum(total_nilai) as jumlah')
+            ->groupBy('jenis')
+            ->pluck('jumlah', 'jenis');
+
+        return [
+            self::JENIS_RETUR => (float) ($nilai[self::JENIS_RETUR] ?? 0),
+            self::JENIS_MUSNAH => (float) ($nilai[self::JENIS_MUSNAH] ?? 0),
+        ];
+    }
 }

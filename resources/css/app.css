@@ -195,3 +195,64 @@
         @apply overflow-hidden;
     }
 }
+
+/*
+ * Sidebar yang disembunyikan lewat tombol menu di layar lebar.
+ * Ditulis di luar @layer agar mengalahkan utilitas lg:translate-x-0 dan lg:pl-60.
+ */
+@media (min-width: 64rem) {
+    html.sidebar-tutup #sidebar {
+        translate: -100% 0;
+    }
+
+    html.sidebar-tutup #konten {
+        padding-left: 0;
+    }
+}
+
+/*
+ * Halaman masuk: dominan putih dengan aksen hijau, senada dengan aplikasi.
+ * Hanya dipakai resources/views/auth/login.blade.php.
+ */
+@layer components {
+    .login-halaman {
+        @apply bg-slate-100 text-slate-800;
+    }
+
+    .login-kartu {
+        @apply border border-slate-200 bg-white;
+        box-shadow: 0 30px 70px -30px rgb(15 23 42 / 0.25);
+    }
+
+    .login-input {
+        @apply w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400;
+
+        &:focus {
+            @apply border-emerald-600 bg-white ring-3 ring-emerald-600/15;
+        }
+    }
+
+    .login-input-salah {
+        @apply border-red-400;
+    }
+
+    .login-tombol {
+        @apply rounded-md bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-800 focus-visible:ring-3 focus-visible:ring-emerald-600/30 focus-visible:outline-none;
+    }
+
+    .login-slide {
+        @apply opacity-0 transition-opacity duration-700;
+
+        &.aktif {
+            @apply opacity-100;
+        }
+    }
+
+    .login-titik {
+        @apply h-0.5 w-6 rounded-full bg-white/40 transition-colors;
+
+        &.aktif {
+            @apply bg-white;
+        }
+    }
+}

@@ -1,6 +1,6 @@
 <header class="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
     <div class="flex items-center gap-3">
-        <button type="button" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" data-sidebar-toggle aria-label="Buka menu">
+        <button type="button" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100" data-sidebar-toggle aria-controls="sidebar" aria-label="Tampilkan atau sembunyikan menu" title="Tampilkan/sembunyikan menu">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>

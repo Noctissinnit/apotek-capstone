@@ -33,9 +33,39 @@ if (modal) {
         }
     });
 
+    // Isian yang sudah diubah tidak boleh hilang tanpa ditanya dulu
+    let isianBerubah = false;
+    isi.addEventListener('input', () => (isianBerubah = true));
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        if (event.detail.target === isi) isianBerubah = false;
+    });
+
+    const bolehDitutup = () => !isianBerubah || confirm('Isian belum disimpan. Tutup jendela ini?');
+
+    // Titik di luar kotak, termasuk garis tepinya, dianggap area gelap
+    const diLuarKotak = (event) => {
+        const kotak = modal.getBoundingClientRect();
+        return event.clientX < kotak.left || event.clientX > kotak.right
+            || event.clientY < kotak.top || event.clientY > kotak.bottom;
+    };
+
+    // Ditutup hanya bila tekan DAN lepas mouse sama-sama di area gelap.
+    // Tanpa ini, memblok teks di dalam kolom lalu melepas mouse di luar kotak
+    // ikut menghasilkan klik pada <dialog> dan jendela tertutup sendiri.
+    let tekanDiLuar = false;
+    modal.addEventListener('pointerdown', (event) => {
+        tekanDiLuar = event.target === modal && diLuarKotak(event);
+    });
+
     modal.addEventListener('click', (event) => {
-        // klik di area gelap di luar kotak
-        if (event.target === modal) tutup();
+        const lepasDiLuar = event.target === modal && diLuarKotak(event);
+        if (tekanDiLuar && lepasDiLuar && bolehDitutup()) tutup();
+        tekanDiLuar = false;
+    });
+
+    // tombol Esc
+    modal.addEventListener('cancel', (event) => {
+        if (!bolehDitutup()) event.preventDefault();
     });
 
     modal.addEventListener('close', () => (isi.innerHTML = ''));
@@ -343,10 +373,23 @@ if (dataTransaksi) {
     });
 }
 
-// Toggle sidebar di layar kecil
+// Toggle sidebar. Di layar lebar sidebar disembunyikan/ditampilkan dan pilihannya
+// diingat; di layar kecil sidebar dibuka sebagai laci di atas konten.
+const layarLebar = window.matchMedia('(min-width: 64rem)');
+
 document.addEventListener('click', (event) => {
     const toggle = event.target.closest('[data-sidebar-toggle]');
     if (!toggle) return;
+
+    if (layarLebar.matches) {
+        const tutup = document.documentElement.classList.toggle('sidebar-tutup');
+        try {
+            localStorage.setItem('sidebar-tutup', tutup ? '1' : '0');
+        } catch {
+            // penyimpanan diblokir browser: status hanya berlaku sampai halaman dimuat ulang
+        }
+        return;
+    }
 
     document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
     document.getElementById('sidebar-backdrop')?.classList.toggle('hidden');
@@ -365,3 +408,18 @@ document.addEventListener('click', (event) => {
     toggle.setAttribute('aria-pressed', String(!terlihat));
     toggle.setAttribute('aria-label', terlihat ? 'Tampilkan password' : 'Sembunyikan password');
 });
+
+// Kalimat bergantian di panel ilustrasi halaman masuk
+const slideLogin = document.querySelector('[data-slide-login]');
+
+if (slideLogin && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const slide = slideLogin.querySelectorAll('[data-slide]');
+    const titik = slideLogin.querySelectorAll('[data-titik]');
+    let urutan = 0;
+
+    setInterval(() => {
+        urutan = (urutan + 1) % slide.length;
+        slide.forEach((el, i) => el.classList.toggle('aktif', i === urutan));
+        titik.forEach((el, i) => el.classList.toggle('aktif', i === urutan));
+    }, 5000);
+}

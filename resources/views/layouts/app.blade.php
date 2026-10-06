@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- Pasang status sidebar sebelum halaman digambar, agar tidak berkedip saat dimuat --}}
+    <script>
+        try {
+            if (localStorage.getItem('sidebar-tutup') === '1') document.documentElement.classList.add('sidebar-tutup');
+        } catch (e) {}
+    </script>
+
     <title>@hasSection('title')@yield('title') - @endif{{ config('app.name', 'Apotek') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,7 +24,7 @@
     <div class="flex min-h-screen">
         @include('layouts.partials.sidebar')
 
-        <div class="flex min-w-0 flex-1 flex-col lg:pl-60">
+        <div id="konten" class="flex min-w-0 flex-1 flex-col transition-[padding] duration-200 lg:pl-60">
             @include('layouts.partials.navbar')
 
             <main class="mx-auto w-full max-w-screen-2xl flex-1 px-4 py-5 sm:px-6">

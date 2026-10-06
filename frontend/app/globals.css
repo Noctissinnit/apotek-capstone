@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/*
+ * Arah tampilan sama dengan aplikasi Laravel: tenang dan padat.
+ * Permukaan putih, garis tipis, sudut kecil. Hijau dipakai terbatas:
+ * tombol utama, menu aktif, dan penanda status.
+ */
+@theme {
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --color-aksen: var(--color-emerald-700);
+  --color-aksen-pekat: var(--color-emerald-800);
+  --color-aksen-muda: var(--color-emerald-50);
+}
+
+@layer base {
+  body {
+    @apply bg-slate-100 text-[0.9375rem] text-slate-800 antialiased;
+  }
+
+  /* angka rupiah dan stok sejajar rapi antar baris */
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .kartu {
+    @apply rounded-md border border-slate-200 bg-white;
+  }
+
+  .isian {
+    @apply w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-emerald-600 focus:ring-3 focus:ring-emerald-600/15;
+  }
+
+  .tombol-utama {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800 focus-visible:ring-3 focus-visible:ring-emerald-600/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .tombol-biasa {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .lencana {
+    @apply inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium;
+  }
+}

@@ -1,4 +1,47 @@
 import './bootstrap';
+import 'htmx.org';
+
+// ---------------------------------------------------------------------------
+// Jendela tumpang: isinya diambil dari server, halaman tidak dimuat ulang
+// ---------------------------------------------------------------------------
+const modal = document.getElementById('modal-utama');
+
+if (modal) {
+    const isi = document.getElementById('modal-isi');
+
+    const tutup = () => {
+        if (!modal.open) return;
+        modal.close();
+        isi.innerHTML = '';
+    };
+
+    // dibuka setelah isinya selesai dimuat, supaya tidak sempat tampil kosong
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        if (event.detail.target !== isi) return;
+
+        if (!modal.open) modal.showModal();
+        isi.querySelector('input, select, textarea')?.focus();
+    });
+
+    // server membalas dengan header ini setelah data tersimpan
+    document.body.addEventListener('htmx:afterRequest', (event) => {
+        if (event.detail.xhr?.getResponseHeader('X-Tutup-Modal')) {
+            tutup();
+            window.location.reload();
+        }
+    });
+
+    modal.addEventListener('click', (event) => {
+        // klik di area gelap di luar kotak
+        if (event.target === modal) tutup();
+    });
+
+    modal.addEventListener('close', () => (isi.innerHTML = ''));
+
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-tutup-modal]')) tutup();
+    });
+}
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 

@@ -91,4 +91,13 @@
         </div>
     </div>
 </div>
-<div class="mt-6 flex justify-end gap-3"><a href="{{ route('obat.index') }}" class="btn-ghost">Batal</a><button type="submit" class="btn-primary">{{ $submitLabel }}</button></div>
+@error('umum')<p class="mt-4 rounded-md border-l-2 border-red-600 bg-red-50 px-3 py-2 text-sm text-red-900">{{ $message }}</p>@enderror
+
+<div class="mt-6 flex justify-end gap-2">
+    @if ($dalamModal ?? false)
+        <button type="button" class="btn-ghost" data-tutup-modal>Batal</button>
+    @else
+        <a href="{{ route('obat.index') }}" class="btn-ghost">Batal</a>
+    @endif
+    <button type="submit" class="btn-primary">{{ $submitLabel }}</button>
+</div>

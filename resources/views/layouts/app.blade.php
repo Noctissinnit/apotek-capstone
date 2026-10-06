@@ -70,6 +70,8 @@
         </div>
     </div>
 
+    @include('components.modal')
+
     @stack('scripts')
 </body>
 </html>

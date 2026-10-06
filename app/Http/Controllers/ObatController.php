@@ -59,9 +59,14 @@ class ObatController extends Controller
         return view('admin.obat.index', compact('obat', 'sort', 'direction', 'kategori', 'satuan'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('admin.obat.create', ['kategori' => Kategori::orderBy('nama_kategori')->get()]);
+        $data = ['kategori' => Kategori::orderBy('nama_kategori')->get()];
+
+        // permintaan dari modal cukup dibalas potongan isinya, bukan halaman penuh
+        return $request->header('HX-Request')
+            ? view('admin.obat.modal-form', $data + ['obat' => new Obat])
+            : view('admin.obat.create', $data);
     }
 
     public function store(Request $request): RedirectResponse
@@ -82,21 +87,25 @@ class ObatController extends Controller
             ]);
         }
 
-        return to_route('obat.index')->with('success', 'Data obat berhasil ditambahkan.');
+        return $this->kembaliKeDaftar($request, 'Data obat berhasil ditambahkan.');
     }
 
-    public function show(Obat $obat): View
+    public function show(Request $request, Obat $obat): View
     {
         $this->ensureSameApotek($obat);
 
-        return view('admin.obat.show', compact('obat'));
+        return view($request->header('HX-Request') ? 'admin.obat.modal-detail' : 'admin.obat.show', compact('obat'));
     }
 
-    public function edit(Obat $obat): View
+    public function edit(Request $request, Obat $obat): View
     {
         $this->ensureSameApotek($obat);
 
-        return view('admin.obat.edit', ['obat' => $obat, 'kategori' => Kategori::orderBy('nama_kategori')->get()]);
+        $data = ['obat' => $obat, 'kategori' => Kategori::orderBy('nama_kategori')->get()];
+
+        return $request->header('HX-Request')
+            ? view('admin.obat.modal-form', $data)
+            : view('admin.obat.edit', $data);
     }
 
     public function update(Request $request, Obat $obat): RedirectResponse
@@ -127,7 +136,7 @@ class ObatController extends Controller
             Storage::disk('unggahan')->delete($gambarLama);
         }
 
-        return to_route('obat.index')->with('success', 'Data obat berhasil diperbarui.');
+        return $this->kembaliKeDaftar($request, 'Data obat berhasil diperbarui.');
     }
 
     public function destroy(Obat $obat): RedirectResponse
@@ -136,6 +145,19 @@ class ObatController extends Controller
         $obat->delete();
 
         return to_route('obat.index')->with('success', 'Data obat berhasil dihapus.');
+    }
+
+    /**
+     * Setelah tersimpan, kembali ke daftar obat. Kalau permintaannya datang
+     * dari modal, cukup beri tanda agar modal ditutup dan daftarnya disegarkan.
+     */
+    private function kembaliKeDaftar(Request $request, string $pesan): RedirectResponse
+    {
+        $tujuan = to_route('obat.index')->with('success', $pesan);
+
+        return $request->header('HX-Request')
+            ? $tujuan->header('X-Tutup-Modal', '1')
+            : $tujuan;
     }
 
     /**

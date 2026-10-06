@@ -6,7 +6,8 @@
 
 @section('actions')
 @can('obat.kelola')
-<a href="{{ route('obat.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">Tambah Obat</a>
+<a href="{{ route('obat.create') }}" class="btn-primary"
+   hx-get="{{ route('obat.create') }}" hx-target="#modal-isi" hx-swap="innerHTML">Tambah Obat</a>
 @endcan
 @endsection
 
@@ -77,9 +78,11 @@
                     <td class="px-5 py-3 text-right"><span @class(['font-medium text-red-600'=> $item->stok <= $item->stok_minimum])>{{ number_format($item->stok) }} {{ $item->satuan }}</span></td>
                     <td class="px-5 py-3 text-right">
                         <div class="flex justify-end gap-3">
-                            <a href="{{ route('obat.show', $item) }}" class="font-medium text-slate-600 hover:text-slate-900">Detail</a>
+                            <a href="{{ route('obat.show', $item) }}" class="font-medium text-slate-600 hover:text-slate-900"
+                                hx-get="{{ route('obat.show', $item) }}" hx-target="#modal-isi" hx-swap="innerHTML">Detail</a>
                             @can('obat.kelola')
-                            <a href="{{ route('obat.edit', $item) }}" class="font-medium text-emerald-600 hover:text-emerald-700">Edit</a>
+                            <a href="{{ route('obat.edit', $item) }}" class="font-medium text-emerald-700 hover:text-emerald-800"
+                                hx-get="{{ route('obat.edit', $item) }}" hx-target="#modal-isi" hx-swap="innerHTML">Edit</a>
                             <form method="POST" action="{{ route('obat.destroy', $item) }}" onsubmit="return confirm('Hapus data obat ini?')">
                                 @csrf
                                 @method('DELETE')
